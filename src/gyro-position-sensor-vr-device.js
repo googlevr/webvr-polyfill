@@ -20,7 +20,7 @@ var THREE = require('./three-math.js');
 // deviceorientation firing frequency (eg. on iOS, it is 20 Hz).
 // The larger this value (in [0, 1]), the smoother but more delayed the
 // head tracking is.
-var SMOOTHING_FACTOR = 0.05;
+var SMOOTHING_FACTOR = 0.4;
 
 /**
  * The positional sensor, implemented using web DeviceOrientation APIs.
@@ -71,18 +71,24 @@ GyroPositionSensorVRDevice.prototype.onScreenOrientationChange =
   this.screenOrientation = window.orientation;
 };
 
+
+var degreeToRadiansFactor = Math.PI / 180.0;
+function degToRad(degrees) {
+  return degrees * degreeToRadiansFactor;
+}
+
 GyroPositionSensorVRDevice.prototype.getOrientation = function() {
   if (this.deviceOrientation == null) {
     return null;
   }
 
   // Rotation around the z-axis.
-  var alpha = THREE.Math.degToRad(this.deviceOrientation.alpha);
+  var alpha = degToRad(this.deviceOrientation.alpha);
   // Front-to-back (in portrait) rotation (x-axis).
-  var beta = THREE.Math.degToRad(this.deviceOrientation.beta);
+  var beta = degToRad(this.deviceOrientation.beta);
   // Left to right (in portrait) rotation (y-axis).
-  var gamma = THREE.Math.degToRad(this.deviceOrientation.gamma);
-  var orient = THREE.Math.degToRad(this.screenOrientation);
+  var gamma = degToRad(this.deviceOrientation.gamma);
+  var orient = degToRad(this.screenOrientation);
 
   // Use three.js to convert to quaternion. Lifted from
   // https://github.com/richtr/threeVR/blob/master/js/DeviceOrientationController.js
