@@ -58,8 +58,7 @@ module.exports.PositionSensorVRDevice = PositionSensorVRDevice;
  */
 var HMDVRDevice = require('./base.js').HMDVRDevice;
 
-// Constants from vrtoolkit: https://github.com/googlesamples/cardboard-java.
-var INTERPUPILLARY_DISTANCE = 0.06;
+var INTERPUPILLARY_DISTANCE = 0.064;
 var DEFAULT_MAX_FOV_TOP = 53.09438705444336;
 var DEFAULT_MAX_FOV_BOTTOM = 53.09438705444336;
 var DEFAULT_MAX_FOV_OUTER = 46.63209533691406;
