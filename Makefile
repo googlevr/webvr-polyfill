@@ -1,6 +1,8 @@
+OUT=build/webvr-polyfill.js
+
 default:
-	mkdir -p build
-	browserify src/main.js > build/webvr-polyfill.js
+	mkdir -p `dirname $(OUT)`
+	browserify src/main.js | derequire > $(OUT)
 	cp build/webvr-polyfill.js ../webvr-boilerplate/bower_components/webvr-polyfill/build/webvr-polyfill.js
 
 watch:

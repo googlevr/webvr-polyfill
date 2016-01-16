@@ -13,8 +13,9 @@
  * limitations under the License.
  */
 var THREE = require('./three-math.js');
+var Util = require('./util.js');
 
-var ROTATE_SPEED = -0.5;
+var ROTATE_SPEED = 0.5;
 /**
  * Provides a quaternion responsible for pre-panning the scene before further
  * transformations due to device sensors.
@@ -31,13 +32,15 @@ function TouchPanner() {
 
   this.theta = 0;
   this.orientation = new THREE.Quaternion();
-  this.euler = new THREE.Euler();
 }
 
 TouchPanner.prototype.getOrientation = function() {
-  this.euler.set(0, this.theta, 0, 'YXZ');
-  this.orientation.setFromEuler(this.euler);
+  this.orientation.setFromEuler(new THREE.Euler(0, 0, this.theta));
   return this.orientation;
+};
+
+TouchPanner.prototype.resetSensor = function() {
+  this.theta = 0;
 };
 
 TouchPanner.prototype.onTouchStart_ = function(e) {
@@ -56,6 +59,11 @@ TouchPanner.prototype.onTouchMove_ = function(e) {
   this.rotateEnd.set(e.touches[0].pageX, e.touches[0].pageY);
   this.rotateDelta.subVectors(this.rotateEnd, this.rotateStart);
   this.rotateStart.copy(this.rotateEnd);
+
+  // On iOS, direction is inverted.
+  if (Util.isIOS()) {
+    this.rotateDelta.x *= -1;
+  }
 
   var element = document.body;
   this.theta += 2 * Math.PI * this.rotateDelta.x / element.clientWidth * ROTATE_SPEED;

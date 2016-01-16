@@ -18,3 +18,7 @@ Util.getQuaternionAngle = function(quat) {
   var angle = 2 * Math.acos(quat.w);
   return angle;
 };
+
+Util.isIOS = function() {
+  return /iPad|iPhone|iPod/.test(navigator.platform);
+};

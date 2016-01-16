@@ -1,5 +1,3 @@
-// Amplified constants since they are from native code, which updates at 200 Hz.
-// Here we get updates at 60 Hz.
 MIN_TIMESTEP = 0.001;
 MAX_TIMESTEP = 1;
 
@@ -14,7 +12,13 @@ function ComplementaryOrientation() {
   this.posePredictor = new PosePredictor(0.050);
 
   this.filterToWorldQ = new THREE.Quaternion();
-  this.filterToWorldQ.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI/2);
+
+  // Set the filter to world transform, but only for Android.
+  if (Util.isIOS()) {
+    this.filterToWorldQ.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI/2);
+  } else {
+    this.filterToWorldQ.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI/2);
+  }
 
   this.worldToScreenQ = new THREE.Quaternion();
   this.setScreenTransform_();
@@ -34,6 +38,12 @@ ComplementaryOrientation.prototype.onDeviceMotionChange_ = function(deviceMotion
   }
   this.accelerometer.set(-accGravity.x, -accGravity.y, -accGravity.z);
   this.gyroscope.set(rotRate.alpha, rotRate.beta, rotRate.gamma);
+
+  // In iOS, rotationRate is reported in degrees, so we first convert to
+  // radians.
+  if (Util.isIOS()) {
+    this.gyroscope.multiplyScalar(Math.PI / 180);
+  }
 
   this.filter.addAccelMeasurement(this.accelerometer, timestampS);
   this.filter.addGyroMeasurement(this.gyroscope, timestampS);
