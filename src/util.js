@@ -27,7 +27,11 @@ Util.isIOS = function() {
 
 Util.isFirefoxAndroid = function() {
   return navigator.userAgent.indexOf('Firefox') !== -1 && navigator.userAgent.indexOf('Android') !== -1;
-}
+};
+
+Util.isWindowsPhone = function() {
+  return navigator.userAgent.indexOf('Windows Phone') !== -1;
+};
 
 // Helper method to validate the time steps of sensor timestamps.
 Util.isTimestampDeltaValid = function(timestampDeltaS) {
