@@ -42,6 +42,8 @@ function FusionPositionSensorVRDevice() {
   // Set the filter to world transform, depending on OS.
   if (Util.isIOS()) {
     this.filterToWorldQ.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI/2);
+  } else if(Util.isWindowsPhone()) {
+    this.filterToWorldQ.setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0); // Edge emulator
   } else {
     this.filterToWorldQ.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI/2);
   }
