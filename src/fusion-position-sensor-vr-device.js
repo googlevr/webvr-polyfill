@@ -82,10 +82,12 @@ FusionPositionSensorVRDevice.prototype.getOrientation = function() {
   var out = new THREE.Quaternion();
   out.copy(this.filterToWorldQ);
   out.multiply(this.resetQ);
+  out.multiply(this.predictedQ);
+
   if (!WebVRConfig.TOUCH_PANNER_DISABLED) {
     out.multiply(this.touchPanner.getOrientation());
   }
-  out.multiply(this.predictedQ);
+
   out.multiply(this.worldToScreenQ);
 
   // Handle the yaw-only case.
