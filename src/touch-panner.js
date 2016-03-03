@@ -22,25 +22,40 @@ var ROTATE_SPEED = 0.5;
  */
 function TouchPanner() {
   window.addEventListener('touchstart', this.onTouchStart_.bind(this));
-  window.addEventListener('touchmove', this.onTouchMove_.bind(this));
-  window.addEventListener('touchend', this.onTouchEnd_.bind(this));
+  window.addEventListener('touchmove',  this.onTouchMove_.bind(this));
+  window.addEventListener('touchend',   this.onTouchEnd_.bind(this));
 
   this.isTouching = false;
   this.rotateStart = new THREE.Vector2();
-  this.rotateEnd = new THREE.Vector2();
+  this.rotateEnd   = new THREE.Vector2();
   this.rotateDelta = new THREE.Vector2();
 
   this.theta = 0;
+  this.phi   = 0;
   this.orientation = new THREE.Quaternion();
 }
 
 TouchPanner.prototype.getOrientation = function() {
-  this.orientation.setFromEuler(new THREE.Euler(0, 0, this.theta));
+  var euler = new THREE.Euler();
+
+  switch (window.orientation) {
+    case 0:
+      euler.set(this.phi, this.theta, 0, 'YXZ');
+      break;
+    case 90:
+    case -90:
+      euler.set(this.theta, this.phi, 0, 'XYZ');
+      break;
+  }
+
+  this.orientation.setFromEuler(euler);
+
   return this.orientation;
 };
 
 TouchPanner.prototype.resetSensor = function() {
   this.theta = 0;
+  this.phi   = 0;
 };
 
 TouchPanner.prototype.onTouchStart_ = function(e) {
@@ -56,6 +71,10 @@ TouchPanner.prototype.onTouchMove_ = function(e) {
   if (!this.isTouching) {
     return;
   }
+
+	event.preventDefault();
+	event.stopPropagation();
+
   this.rotateEnd.set(e.touches[0].pageX, e.touches[0].pageY);
   this.rotateDelta.subVectors(this.rotateEnd, this.rotateStart);
   this.rotateStart.copy(this.rotateEnd);
@@ -66,7 +85,11 @@ TouchPanner.prototype.onTouchMove_ = function(e) {
   }
 
   var element = document.body;
-  this.theta += 2 * Math.PI * this.rotateDelta.x / element.clientWidth * ROTATE_SPEED;
+  this.phi   += 2 * Math.PI * this.rotateDelta.y / element.clientHeight * ROTATE_SPEED;
+  this.theta += 2 * Math.PI * this.rotateDelta.x / element.clientWidth  * ROTATE_SPEED;
+
+  // Prevent looking too far up or down.
+  this.phi = Util.clamp(this.phi, -Math.PI/2, Math.PI/2);
 };
 
 TouchPanner.prototype.onTouchEnd_ = function(e) {
