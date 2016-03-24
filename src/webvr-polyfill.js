@@ -37,7 +37,7 @@ function WebVRPolyfill() {
     if (!this.nativeWebVRAvailable) {
       this.enablePolyfill();
     }
-    if (WebVRConfig.ENABLE_DEPRECATED_API) {
+    if (WebVRConfig.DEPRECATED_API) {
       this.enableDeprecatedPolyfill();
     }
   }
@@ -65,7 +65,7 @@ WebVRPolyfill.prototype.populateDevices = function() {
     this.displays.push(vrDisplay);
 
     // For backwards compatibility
-    if (WebVRConfig.ENABLE_DEPRECATED_API) {
+    if (WebVRConfig.DEPRECATED_API) {
       this.devices.push(new VRDisplayHMDDevice(vrDisplay));
       this.devices.push(new VRDisplayPositionSensorDevice(vrDisplay));
     }
@@ -77,14 +77,14 @@ WebVRPolyfill.prototype.populateDevices = function() {
     this.displays.push(vrDisplay);
 
     // For backwards compatibility
-    if (WebVRConfig.ENABLE_DEPRECATED_API) {
+    if (WebVRConfig.DEPRECATED_API) {
       this.devices.push(new VRDisplayHMDDevice(vrDisplay));
       this.devices.push(new VRDisplayPositionSensorDevice(vrDisplay));
     }
   }
 
   // Uncomment to add positional tracking via webcam.
-  //if (!this.isMobile() && WebVRConfig.ENABLE_DEPRECATED_API) {
+  //if (!this.isMobile() && WebVRConfig.DEPRECATED_API) {
   //  positionDevice = new WebcamPositionSensorVRDevice();
   //  this.devices.push(positionDevice);
   //}

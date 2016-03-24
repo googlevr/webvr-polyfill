@@ -68,7 +68,10 @@ WebVRConfig = {
   DEFER_INITIALIZATION: true, // Default: false.
 
   // Enable the deprecated version of the API (navigator.getVRDevices).
-  ENABLE_DEPRECATED_API: true, // Default: false.
+  DEPRECATED_API: true, // Default: false.
+
+  // Enable the Cardboard UI: back arrow, centerline, gear icon for settings.
+  CARDBOARD_UI: false, // Default: true.
 
   // Scales the recommended buffer size reported by WebVR, which can improve
   // performance.

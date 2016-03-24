@@ -42,7 +42,10 @@ window.WebVRConfig = Util.extend({
   DEFER_INITIALIZATION: false,
 
   // Enable the deprecated version of the API (navigator.getVRDevices).
-  ENABLE_DEPRECATED_API: false,
+  DEPRECATED_API: false,
+
+  // Enable the Cardboard UI: back arrow, centerline, gear icon for settings.
+  CARDBOARD_UI: true,
 
   // Scales the recommended buffer size reported by WebVR, which can improve
   // performance.
