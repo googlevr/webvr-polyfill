@@ -4,5 +4,8 @@
   "description": "",
   "main": "index.html",
   "author": "",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": {
+    "three": "^0.75.0"
+  }
 }
