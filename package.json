@@ -26,10 +26,7 @@
     "watch": "watchify src/main.js -v -d -o build/webvr-polyfill.js",
     "copy": "cp build/webvr-polyfill.js ../webvr-boilerplate/node_modules/webvr-polyfill/build/webvr-polyfill.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/borismus/webvr-polyfill.git"
-  },
+  "repository": "borismus/webvr-polyfill",
   "author": "Boris Smus",
   "bugs": {
     "url": "https://github.com/borismus/webvr-polyfill/issues"
