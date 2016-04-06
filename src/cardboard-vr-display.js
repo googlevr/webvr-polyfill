@@ -47,10 +47,8 @@ function CardboardVRDisplay() {
   this.deviceInfo_ = new DeviceInfo(this.dpdb_.getDeviceParams());
 
   this.viewerSelector_ = new ViewerSelector();
-  this.viewerSelector_.on('change', this.onViewerChanged_.bind(this));
-
-  // Set the correct initial viewer.
-  this.deviceInfo_.setViewer(this.viewerSelector_.getCurrentViewer());
+  this.viewerSelector_.on('profile', this.onViewerProfile_.bind(this));
+  this.viewerSelector_.queryCurrentViewerProfile();
 
   this.rotateInstructions_ = new RotateInstructions();
 }
@@ -187,15 +185,27 @@ CardboardVRDisplay.prototype.onOrientationChange_ = function(e) {
   this.rotateInstructions_.update();
 };
 
-CardboardVRDisplay.prototype.onViewerChanged_ = function(viewer) {
-  this.deviceInfo_.setViewer(viewer);
+CardboardVRDisplay.prototype.onViewerProfile_ = function(profile) {
+  // If the user has a selected viewer
+  if (profile) {
+    // Use it
+    this.deviceInfo_.setViewerProfile(profile);
 
-  // Update the distortion appropriately.
-  this.distorter_.updateDeviceInfo(this.deviceInfo_);
+    if (this.distorter_) {
+      // Update the distortion appropriately.
+      this.distorter_.updateDeviceInfo(this.deviceInfo_);
+    }
 
-  // Fire a new event containing viewer and device parameters for clients that
-  // want to implement their own geometry-based distortion.
-  this.fireVRDisplayDeviceParamsChange_();
+    // Fire a new event containing viewer and device parameters for clients that
+    // want to implement their own geometry-based distortion.
+    this.fireVRDisplayDeviceParamsChange_();
+
+    // Hide the selector (if applicable) after picking headset
+    this.viewerSelector_.hide();
+  // If the user doesn't have a selected viewer
+  } else {
+    // TODO: Prompt user to select device on entering cardboard mode
+  }
 };
 
 CardboardVRDisplay.prototype.fireVRDisplayDeviceParamsChange_ = function() {

@@ -1,4 +1,97 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = setTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    clearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        setTimeout(drainQueue, 0);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],2:[function(_dereq_,module,exports){
 (function (process,global){
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -956,7 +1049,7 @@
 
 
 }).call(this,_dereq_('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":26}],2:[function(_dereq_,module,exports){
+},{"_process":1}],3:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1278,7 +1371,7 @@ module.exports.VRDevice = VRDevice;
 module.exports.HMDVRDevice = HMDVRDevice;
 module.exports.PositionSensorVRDevice = PositionSensorVRDevice;
 
-},{"./util.js":22,"./wakelock.js":24}],3:[function(_dereq_,module,exports){
+},{"./util.js":23,"./wakelock.js":25}],4:[function(_dereq_,module,exports){
 /*
  * Copyright 2016 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1915,7 +2008,7 @@ CardboardDistorter.prototype.getOwnPropertyDescriptor_ = function(proto, attrNam
 
 module.exports = CardboardDistorter;
 
-},{"./cardboard-ui.js":4,"./deps/wglu-preserve-state.js":6,"./util.js":22}],4:[function(_dereq_,module,exports){
+},{"./cardboard-ui.js":5,"./deps/wglu-preserve-state.js":7,"./util.js":23}],5:[function(_dereq_,module,exports){
 /*
  * Copyright 2016 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -2203,7 +2296,7 @@ CardboardUI.prototype.renderNoState = function() {
 
 module.exports = CardboardUI;
 
-},{"./deps/wglu-preserve-state.js":6,"./util.js":22}],5:[function(_dereq_,module,exports){
+},{"./deps/wglu-preserve-state.js":7,"./util.js":23}],6:[function(_dereq_,module,exports){
 /*
  * Copyright 2016 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -2253,10 +2346,8 @@ function CardboardVRDisplay() {
   this.deviceInfo_ = new DeviceInfo(this.dpdb_.getDeviceParams());
 
   this.viewerSelector_ = new ViewerSelector();
-  this.viewerSelector_.on('change', this.onViewerChanged_.bind(this));
-
-  // Set the correct initial viewer.
-  this.deviceInfo_.setViewer(this.viewerSelector_.getCurrentViewer());
+  this.viewerSelector_.on('profile', this.onViewerProfile_.bind(this));
+  this.viewerSelector_.queryCurrentViewerProfile();
 
   this.rotateInstructions_ = new RotateInstructions();
 }
@@ -2393,15 +2484,27 @@ CardboardVRDisplay.prototype.onOrientationChange_ = function(e) {
   this.rotateInstructions_.update();
 };
 
-CardboardVRDisplay.prototype.onViewerChanged_ = function(viewer) {
-  this.deviceInfo_.setViewer(viewer);
+CardboardVRDisplay.prototype.onViewerProfile_ = function(profile) {
+  // If the user has a selected viewer
+  if (profile) {
+    // Use it
+    this.deviceInfo_.setViewerProfile(profile);
 
-  // Update the distortion appropriately.
-  this.distorter_.updateDeviceInfo(this.deviceInfo_);
+    if (this.distorter_) {
+      // Update the distortion appropriately.
+      this.distorter_.updateDeviceInfo(this.deviceInfo_);
+    }
 
-  // Fire a new event containing viewer and device parameters for clients that
-  // want to implement their own geometry-based distortion.
-  this.fireVRDisplayDeviceParamsChange_();
+    // Fire a new event containing viewer and device parameters for clients that
+    // want to implement their own geometry-based distortion.
+    this.fireVRDisplayDeviceParamsChange_();
+
+    // Hide the selector (if applicable) after picking headset
+    this.viewerSelector_.hide();
+  // If the user doesn't have a selected viewer
+  } else {
+    // TODO: Prompt user to select device on entering cardboard mode
+  }
 };
 
 CardboardVRDisplay.prototype.fireVRDisplayDeviceParamsChange_ = function() {
@@ -2416,7 +2519,7 @@ CardboardVRDisplay.prototype.fireVRDisplayDeviceParamsChange_ = function() {
 
 module.exports = CardboardVRDisplay;
 
-},{"./base.js":2,"./cardboard-distorter.js":3,"./cardboard-ui.js":4,"./device-info.js":7,"./dpdb/dpdb.js":11,"./rotate-instructions.js":15,"./sensor-fusion/fusion-pose-sensor.js":17,"./util.js":22,"./viewer-selector.js":23}],6:[function(_dereq_,module,exports){
+},{"./base.js":3,"./cardboard-distorter.js":4,"./cardboard-ui.js":5,"./device-info.js":8,"./dpdb/dpdb.js":12,"./rotate-instructions.js":16,"./sensor-fusion/fusion-pose-sensor.js":18,"./util.js":23,"./viewer-selector.js":24}],7:[function(_dereq_,module,exports){
 /*
 Copyright (c) 2016, Brandon Jones.
 
@@ -2581,7 +2684,7 @@ function WGLUPreserveGLState(gl, bindings, callback) {
 }
 
 module.exports = WGLUPreserveGLState;
-},{}],7:[function(_dereq_,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -2626,35 +2729,6 @@ var DEFAULT_IOS = new Device({
   bevelMeters: 0.004
 });
 
-
-var Viewers = {
-  CardboardV1: new CardboardViewer({
-    id: 'CardboardV1',
-    label: 'Cardboard I/O 2014',
-    fov: 40,
-    interLensDistance: 0.060,
-    baselineLensDistance: 0.035,
-    screenLensDistance: 0.042,
-    distortionCoefficients: [0.441, 0.156],
-    inverseCoefficients: [-0.4410035, 0.42756155, -0.4804439, 0.5460139,
-      -0.58821183, 0.5733938, -0.48303202, 0.33299083, -0.17573841,
-      0.0651772, -0.01488963, 0.001559834]
-  }),
-  CardboardV2: new CardboardViewer({
-    id: 'CardboardV2',
-    label: 'Cardboard I/O 2015',
-    fov: 60,
-    interLensDistance: 0.064,
-    baselineLensDistance: 0.035,
-    screenLensDistance: 0.039,
-    distortionCoefficients: [0.34, 0.55],
-    inverseCoefficients: [-0.33836704, -0.18162185, 0.862655, -1.2462051,
-      1.0560602, -0.58208317, 0.21609078, -0.05444823, 0.009177956,
-      -9.904169E-4, 6.183535E-5, -1.6981803E-6]
-  })
-};
-
-
 var DEFAULT_LEFT_CENTER = {x: 0.5, y: 0.5};
 var DEFAULT_RIGHT_CENTER = {x: 0.5, y: 0.5};
 
@@ -2666,7 +2740,29 @@ var DEFAULT_RIGHT_CENTER = {x: 0.5, y: 0.5};
  * params were found.
  */
 function DeviceInfo(deviceParams) {
-  this.viewer = Viewers.CardboardV2;
+  // hack: Default to Google Cardboard v2
+  // Ideally there'd be no default without actual viewer data
+  this.viewer = new CardboardViewer({
+    "vendor": "Google",
+    "model": "Cardboard I/O 2015",
+    "screen_to_lens_distance": 0.03680000081658363,
+    "inter_lens_distance": 0.06199999898672104,
+    "left_eye_field_of_view_angles": [
+      50,
+      50,
+      50,
+      50
+    ],
+    "vertical_alignment": "bottom",
+    "tray_to_lens_distance": 0.03500000014901161,
+    "distortion_coefficients": [
+      0.26260000467300415,
+      0.2678999900817871
+    ],
+    "has_magnet": false,
+    "primary_button": "indirect_touch",
+    "original_url": "goo.gl/R2gCV1"
+  });
   this.updateDeviceParams(deviceParams);
   this.distortion = new Distortion(this.viewer.distortionCoefficients);
 }
@@ -2679,8 +2775,8 @@ DeviceInfo.prototype.getDevice = function() {
   return this.device;
 };
 
-DeviceInfo.prototype.setViewer = function(viewer) {
-  this.viewer = viewer;
+DeviceInfo.prototype.setViewerProfile = function(profile) {
+  this.viewer = new CardboardViewer(profile);
   this.distortion = new Distortion(this.viewer.distortionCoefficients);
 };
 
@@ -2735,10 +2831,10 @@ DeviceInfo.prototype.getDistortedFieldOfViewLeftEye = function() {
       distortion.distort(topDist / eyeToScreenDistance)));
 
   return {
-    leftDegrees: Math.min(outerAngle, viewer.fov),
-    rightDegrees: Math.min(innerAngle, viewer.fov),
-    downDegrees: Math.min(bottomAngle, viewer.fov),
-    upDegrees: Math.min(topAngle, viewer.fov)
+    leftDegrees: Math.min(outerAngle, viewer.leftEye.leftFov),
+    rightDegrees: Math.min(innerAngle, viewer.leftEye.rightFov),
+    downDegrees: Math.min(bottomAngle, viewer.leftEye.bottomFov),
+    upDegrees: Math.min(topAngle, viewer.leftEye.topFov)
   };
 };
 
@@ -2752,10 +2848,10 @@ DeviceInfo.prototype.getLeftEyeVisibleTanAngles = function() {
   var distortion = this.distortion;
 
   // Tan-angles from the max FOV.
-  var fovLeft = Math.tan(-THREE.Math.degToRad(viewer.fov));
-  var fovTop = Math.tan(THREE.Math.degToRad(viewer.fov));
-  var fovRight = Math.tan(THREE.Math.degToRad(viewer.fov));
-  var fovBottom = Math.tan(-THREE.Math.degToRad(viewer.fov));
+  var fovLeft = Math.tan(-THREE.Math.degToRad(viewer.leftEye.leftFov));
+  var fovTop = Math.tan(THREE.Math.degToRad(viewer.leftEye.topFov));
+  var fovRight = Math.tan(THREE.Math.degToRad(viewer.leftEye.rightFov));
+  var fovBottom = Math.tan(-THREE.Math.degToRad(viewer.leftEye.bottomFov));
   // Viewport size.
   var halfWidth = device.widthMeters / 4;
   var halfHeight = device.heightMeters / 2;
@@ -2789,10 +2885,10 @@ DeviceInfo.prototype.getLeftEyeNoLensTanAngles = function() {
 
   var result = new Float32Array(4);
   // Tan-angles from the max FOV.
-  var fovLeft = distortion.distortInverse(Math.tan(-THREE.Math.degToRad(viewer.fov)));
-  var fovTop = distortion.distortInverse(Math.tan(THREE.Math.degToRad(viewer.fov)));
-  var fovRight = distortion.distortInverse(Math.tan(THREE.Math.degToRad(viewer.fov)));
-  var fovBottom = distortion.distortInverse(Math.tan(-THREE.Math.degToRad(viewer.fov)));
+  var fovLeft = distortion.distortInverse(Math.tan(-THREE.Math.degToRad(viewer.leftEye.leftFov)));
+  var fovTop = distortion.distortInverse(Math.tan(THREE.Math.degToRad(viewer.leftEye.topFov)));
+  var fovRight = distortion.distortInverse(Math.tan(THREE.Math.degToRad(viewer.leftEye.rightFov)));
+  var fovBottom = distortion.distortInverse(Math.tan(-THREE.Math.degToRad(viewer.leftEye.bottomFov)));
   // Viewport size.
   var halfWidth = device.widthMeters / 4;
   var halfHeight = device.heightMeters / 2;
@@ -2922,7 +3018,7 @@ DeviceInfo.prototype.getUndistortedParams_ = function() {
   var eyePosX = screenWidth / 2 - halfLensDistance;
   var eyePosY = (viewer.baselineLensDistance - device.bevelMeters) / eyeToScreenDistance;
 
-  var maxFov = viewer.fov;
+  var maxFov = viewer.leftEye.maxFov;
   var viewerMax = distortion.distortInverse(Math.tan(THREE.Math.degToRad(maxFov)));
   var outerDist = Math.min(eyePosX, viewerMax);
   var innerDist = Math.min(halfLensDistance, viewerMax);
@@ -2940,33 +3036,34 @@ DeviceInfo.prototype.getUndistortedParams_ = function() {
 };
 
 
-function CardboardViewer(params) {
-  // A machine readable ID.
-  this.id = params.id;
+function CardboardViewer(profile) {
   // A human readable label.
-  this.label = params.label;
+  this.label = profile.model;
 
   // Field of view in degrees (per side).
-  this.fov = params.fov;
+  var fov = profile.left_eye_field_of_view_angles;
+  this.leftEye = {
+    leftFov: fov[0],
+    rightFov: fov[1],
+    bottomFov: fov[2],
+    topFov: fov[3],
+    maxFov: Math.max.apply(Math, fov)
+  };
 
   // Distance between lens centers in meters.
-  this.interLensDistance = params.interLensDistance;
+  this.interLensDistance = profile.inter_lens_distance;
   // Distance between viewer baseline and lens center in meters.
-  this.baselineLensDistance = params.baselineLensDistance;
+  this.baselineLensDistance = profile.tray_to_lens_distance;
   // Screen-to-lens distance in meters.
-  this.screenLensDistance = params.screenLensDistance;
+  this.screenLensDistance = profile.screen_to_lens_distance;
 
   // Distortion coefficients.
-  this.distortionCoefficients = params.distortionCoefficients;
-  // Inverse distortion coefficients.
-  // TODO: Calculate these from distortionCoefficients in the future.
-  this.inverseCoefficients = params.inverseCoefficients;
+  this.distortionCoefficients = profile.distortion_coefficients;
 }
 
-// Export viewer information.
-DeviceInfo.Viewers = Viewers;
 module.exports = DeviceInfo;
-},{"./distortion/distortion.js":9,"./three-math.js":20,"./util.js":22}],8:[function(_dereq_,module,exports){
+
+},{"./distortion/distortion.js":10,"./three-math.js":21,"./util.js":23}],9:[function(_dereq_,module,exports){
 /*
  * Copyright 2016 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -3058,7 +3155,7 @@ module.exports.VRDisplayHMDDevice = VRDisplayHMDDevice;
 module.exports.VRDisplayPositionSensorDevice = VRDisplayPositionSensorDevice;
 
 
-},{"./base.js":2}],9:[function(_dereq_,module,exports){
+},{"./base.js":3}],10:[function(_dereq_,module,exports){
 /**
  * TODO(smus): Implement coefficient inversion.
  */
@@ -3107,7 +3204,7 @@ Distortion.prototype.distort = function(radius) {
 }
 
 module.exports = Distortion;
-},{}],10:[function(_dereq_,module,exports){
+},{}],11:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -4078,7 +4175,7 @@ var DPDB_CACHE = {
 
 module.exports = DPDB_CACHE;
 
-},{}],11:[function(_dereq_,module,exports){
+},{}],12:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -4268,7 +4365,7 @@ function DeviceParams(params) {
 }
 
 module.exports = Dpdb;
-},{"../util.js":22,"./dpdb-cache.js":10}],12:[function(_dereq_,module,exports){
+},{"../util.js":23,"./dpdb-cache.js":11}],13:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -4312,7 +4409,7 @@ Emitter.prototype.on = function(eventName, callback) {
 
 module.exports = Emitter;
 
-},{}],13:[function(_dereq_,module,exports){
+},{}],14:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -4340,7 +4437,7 @@ if (!window.WebVRConfig.DEFER_INITIALIZATION) {
   }
 }
 
-},{"./webvr-polyfill.js":25}],14:[function(_dereq_,module,exports){
+},{"./webvr-polyfill.js":26}],15:[function(_dereq_,module,exports){
 /*
  * Copyright 2016 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -4519,7 +4616,7 @@ MouseKeyboardVRDisplay.prototype.resetPose = function() {
 
 module.exports = MouseKeyboardVRDisplay;
 
-},{"./base.js":2,"./three-math.js":20,"./util.js":22}],15:[function(_dereq_,module,exports){
+},{"./base.js":3,"./three-math.js":21,"./util.js":23}],16:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -4663,7 +4760,7 @@ RotateInstructions.prototype.loadIcon_ = function() {
 
 module.exports = RotateInstructions;
 
-},{"./util.js":22}],16:[function(_dereq_,module,exports){
+},{"./util.js":23}],17:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -4831,7 +4928,7 @@ ComplementaryFilter.prototype.gyroToQuaternionDelta_ = function(gyro, dt) {
 
 module.exports = ComplementaryFilter;
 
-},{"../three-math.js":20,"../util.js":22,"./sensor-sample.js":19}],17:[function(_dereq_,module,exports){
+},{"../three-math.js":21,"../util.js":23,"./sensor-sample.js":20}],18:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -4998,7 +5095,7 @@ FusionPoseSensor.prototype.setScreenTransform_ = function() {
 
 module.exports = FusionPoseSensor;
 
-},{"../three-math.js":20,"../touch-panner.js":21,"../util.js":22,"./complementary-filter.js":16,"./pose-predictor.js":18}],18:[function(_dereq_,module,exports){
+},{"../three-math.js":21,"../touch-panner.js":22,"../util.js":23,"./complementary-filter.js":17,"./pose-predictor.js":19}],19:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -5081,7 +5178,7 @@ PosePredictor.prototype.getPrediction = function(currentQ, gyro, timestampS) {
 
 module.exports = PosePredictor;
 
-},{"../three-math.js":20}],19:[function(_dereq_,module,exports){
+},{"../three-math.js":21}],20:[function(_dereq_,module,exports){
 function SensorSample(sample, timestampS) {
   this.set(sample, timestampS);
 };
@@ -5097,7 +5194,7 @@ SensorSample.prototype.copy = function(sensorSample) {
 
 module.exports = SensorSample;
 
-},{}],20:[function(_dereq_,module,exports){
+},{}],21:[function(_dereq_,module,exports){
 /*
  * A subset of THREE.js, providing mostly quaternion and euler-related
  * operations, manually lifted from
@@ -7392,7 +7489,7 @@ THREE.Math = {
 
 module.exports = THREE;
 
-},{}],21:[function(_dereq_,module,exports){
+},{}],22:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -7470,7 +7567,7 @@ TouchPanner.prototype.onTouchEnd_ = function(e) {
 
 module.exports = TouchPanner;
 
-},{"./three-math.js":20,"./util.js":22}],22:[function(_dereq_,module,exports){
+},{"./three-math.js":21,"./util.js":23}],23:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -7660,7 +7757,7 @@ Util.isMobile = function() {
 
 module.exports = Util;
 
-},{}],23:[function(_dereq_,module,exports){
+},{}],24:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -7677,11 +7774,9 @@ module.exports = Util;
  */
 
 var Emitter = _dereq_('./emitter.js');
-var Util = _dereq_('./util.js');
-var DeviceInfo = _dereq_('./device-info.js');
 
-var DEFAULT_VIEWER = 'CardboardV1';
-var VIEWER_KEY = 'WEBVR_CARDBOARD_VIEWER';
+var IFRAME_ORIGIN = 'https://embed.whatcardboard.com';
+var IFRAME_URL = IFRAME_ORIGIN + '/v0/1/iframe/';
 var CLASS_NAME = 'webvr-polyfill-viewer-selector';
 
 /**
@@ -7689,69 +7784,86 @@ var CLASS_NAME = 'webvr-polyfill-viewer-selector';
  * and hidden. Generates events when viewer parameters change. Also supports
  * saving the currently selected index in localStorage.
  */
-function ViewerSelector() {
-  // Try to load the selected key from local storage. If none exists, use the
-  // default key.
-  try {
-    this.selectedKey = localStorage.getItem(VIEWER_KEY) || DEFAULT_VIEWER;
-  } catch (error) {
-    console.error('Failed to load viewer profile: %s', error);
-  }
-  this.dialog = this.createDialog_(DeviceInfo.Viewers);
-  this.root = null;
-}
-ViewerSelector.prototype = new Emitter();
-
-ViewerSelector.prototype.show = function(root) {
+function ViewerSelector(root) {
   this.root = root;
 
-  root.appendChild(this.dialog);
-  //console.log('ViewerSelector.show');
+  this.iframe = document.createElement('iframe');
+  this.iframe.src = IFRAME_URL;
 
-  // Ensure the currently selected item is checked.
-  var selected = this.dialog.querySelector('#' + this.selectedKey);
-  selected.checked = true;
+  this.dialog = this.createDialog_();
 
+  // Buffer messages until iframe is loaded
+  this.messageQueue_ = [];
+  this.iframe.addEventListener('load', this.unqueueMessages_.bind(this));
+
+  window.addEventListener('message', this.receiveMessage_.bind(this));
+}
+ViewerSelector.prototype = new Emitter();
+ViewerSelector.prototype.receiveMessage_ = function(evt) {
+  if (evt.origin == IFRAME_ORIGIN) {
+    return this.handleMessage_(evt.data);
+  }
+};
+ViewerSelector.prototype.handleMessage_ = function(message) {
+  switch (message.type) {
+    case 'ready': return this.handleReadyMessage_(message);
+    case 'deviceprofile': return this.handleDeviceProfileMessage_(message);
+  }
+};
+ViewerSelector.prototype.handleReadyMessage_ = function(message) {
+  if (message.presentable && this.showing_) {
+    this.unhide_();
+  }
+};
+ViewerSelector.prototype.handleDeviceProfileMessage_ = function(message) {
+  this.emit('profile', message.profile);
+};
+ViewerSelector.prototype.postIframeMessage_ = function(message) {
+  return this.iframe.contentWindow.postMessage(message, IFRAME_ORIGIN);
+};
+ViewerSelector.prototype.sendMessage_ = function(message) {
+  if (this.messageQueue_) {
+    this.messageQueue_.push(message);
+  } else {
+    return this.postIframeMessage_(message);
+  }
+};
+ViewerSelector.prototype.unqueueMessages_ = function() {
+  if (this.messageQueue_) {
+    for (var i = 0; i < this.messageQueue_.length; i++) {
+      this.postIframeMessage_(this.messageQueue_[i]);
+    }
+    this.messageQueue_ = null;
+    this.iframe.removeEventListener('load', this.initialIframeLoadListener_);
+  }
+};
+
+ViewerSelector.prototype.unhide_ = function() {
   // Show the UI.
   this.dialog.style.display = 'block';
 };
+ViewerSelector.prototype.show = function(root) {
+  this.root = root;
+
+  // re-establish the message queue,
+  // as moving the iframe in the DOM will cause it to reload
+  this.dialog.parentElement.removeChild(this.dialog);
+  this.messageQueue_ = [];
+  root.appendChild(this.dialog);
+
+  //console.log('ViewerSelector.show');
+  this.showing_ = true;
+  return this.sendMessage_({type: 'present'});
+};
 
 ViewerSelector.prototype.hide = function() {
-  if (this.root && this.root.contains(this.dialog)) {
-    this.root.removeChild(this.dialog);
-  }
+  this.showing_ = false;
   //console.log('ViewerSelector.hide');
   this.dialog.style.display = 'none';
 };
 
-ViewerSelector.prototype.getCurrentViewer = function() {
-  return DeviceInfo.Viewers[this.selectedKey];
-};
-
-ViewerSelector.prototype.getSelectedKey_ = function() {
-  var input = this.dialog.querySelector('input[name=field]:checked');
-  if (input) {
-    return input.id;
-  }
-  return null;
-};
-
-ViewerSelector.prototype.onSave_ = function() {
-  this.selectedKey = this.getSelectedKey_();
-  if (!this.selectedKey || !DeviceInfo.Viewers[this.selectedKey]) {
-    console.error('ViewerSelector.onSave_: this should never happen!');
-    return;
-  }
-
-  this.emit('change', DeviceInfo.Viewers[this.selectedKey]);
-
-  // Attempt to save the viewer profile, but fails in private mode.
-  try {
-    localStorage.setItem(VIEWER_KEY, this.selectedKey);
-  } catch(error) {
-    console.error('Failed to save viewer profile: %s', error);
-  }
-  this.hide();
+ViewerSelector.prototype.queryCurrentViewerProfile = function() {
+  this.sendMessage_({type: 'query'});
 };
 
 /**
@@ -7773,95 +7885,29 @@ ViewerSelector.prototype.createDialog_ = function(options) {
   s.background = 'rgba(0, 0, 0, 0.3)';
   overlay.addEventListener('click', this.hide.bind(this));
 
-  var width = 280;
-  var dialog = document.createElement('div');
-  var s = dialog.style;
+  s = this.iframe.style;
   s.boxSizing = 'border-box';
   s.position = 'fixed';
   s.top = '24px';
-  s.left = '50%';
-  s.marginLeft = (-width/2) + 'px';
-  s.width = width + 'px';
+  s.left = '25%';
+  s.width = '50%';
+  s.height = '80%';
+  s.right = '24px';
   s.padding = '24px';
-  s.overflow = 'hidden';
   s.background = '#fafafa';
-  s.fontFamily = "'Roboto', sans-serif";
+  s.border = 'none';
   s.boxShadow = '0px 5px 20px #666';
 
-  dialog.appendChild(this.createH1_('Select your viewer'));
-  for (var id in options) {
-    dialog.appendChild(this.createChoice_(id, options[id].label));
-  }
-  dialog.appendChild(this.createButton_('Save', this.onSave_.bind(this)));
-
   container.appendChild(overlay);
-  container.appendChild(dialog);
+  container.appendChild(this.iframe);
+  document.body.appendChild(container);
 
   return container;
 };
 
-ViewerSelector.prototype.createH1_ = function(name) {
-  var h1 = document.createElement('h1');
-  var s = h1.style;
-  s.color = 'black';
-  s.fontSize = '20px';
-  s.fontWeight = 'bold';
-  s.marginTop = 0;
-  s.marginBottom = '24px';
-  h1.innerHTML = name;
-  return h1;
-};
-
-ViewerSelector.prototype.createChoice_ = function(id, name) {
-  /*
-  <div class="choice">
-  <input id="v1" type="radio" name="field" value="v1">
-  <label for="v1">Cardboard V1</label>
-  </div>
-  */
-  var div = document.createElement('div');
-  div.style.marginTop = '8px';
-  div.style.color = 'black';
-
-  var input = document.createElement('input');
-  input.style.fontSize = '30px';
-  input.setAttribute('id', id);
-  input.setAttribute('type', 'radio');
-  input.setAttribute('value', id);
-  input.setAttribute('name', 'field');
-
-  var label = document.createElement('label');
-  label.style.marginLeft = '4px';
-  label.setAttribute('for', id);
-  label.innerHTML = name;
-
-  div.appendChild(input);
-  div.appendChild(label);
-
-  return div;
-};
-
-ViewerSelector.prototype.createButton_ = function(label, onclick) {
-  var button = document.createElement('button');
-  button.innerHTML = label;
-  var s = button.style;
-  s.float = 'right';
-  s.textTransform = 'uppercase';
-  s.color = '#1094f7';
-  s.fontSize = '14px';
-  s.letterSpacing = 0;
-  s.border = 0;
-  s.background = 'none';
-  s.marginTop = '16px';
-
-  button.addEventListener('click', onclick);
-
-  return button;
-};
-
 module.exports = ViewerSelector;
 
-},{"./device-info.js":7,"./emitter.js":12,"./util.js":22}],24:[function(_dereq_,module,exports){
+},{"./emitter.js":13}],25:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -7936,7 +7982,7 @@ function getWakeLock() {
 }
 
 module.exports = getWakeLock();
-},{"./util.js":22}],25:[function(_dereq_,module,exports){
+},{"./util.js":23}],26:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -8117,97 +8163,4 @@ WebVRPolyfill.prototype.isCardboardCompatible = function() {
 
 module.exports = WebVRPolyfill;
 
-},{"./base.js":2,"./cardboard-vr-display.js":5,"./display-wrappers.js":8,"./mouse-keyboard-vr-display.js":14,"es6-promise":1}],26:[function(_dereq_,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = setTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    clearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        setTimeout(drainQueue, 0);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}]},{},[13]);
+},{"./base.js":3,"./cardboard-vr-display.js":6,"./display-wrappers.js":9,"./mouse-keyboard-vr-display.js":15,"es6-promise":2}]},{},[14]);

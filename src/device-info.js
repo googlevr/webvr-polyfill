@@ -42,35 +42,6 @@ var DEFAULT_IOS = new Device({
   bevelMeters: 0.004
 });
 
-
-var Viewers = {
-  CardboardV1: new CardboardViewer({
-    id: 'CardboardV1',
-    label: 'Cardboard I/O 2014',
-    fov: 40,
-    interLensDistance: 0.060,
-    baselineLensDistance: 0.035,
-    screenLensDistance: 0.042,
-    distortionCoefficients: [0.441, 0.156],
-    inverseCoefficients: [-0.4410035, 0.42756155, -0.4804439, 0.5460139,
-      -0.58821183, 0.5733938, -0.48303202, 0.33299083, -0.17573841,
-      0.0651772, -0.01488963, 0.001559834]
-  }),
-  CardboardV2: new CardboardViewer({
-    id: 'CardboardV2',
-    label: 'Cardboard I/O 2015',
-    fov: 60,
-    interLensDistance: 0.064,
-    baselineLensDistance: 0.035,
-    screenLensDistance: 0.039,
-    distortionCoefficients: [0.34, 0.55],
-    inverseCoefficients: [-0.33836704, -0.18162185, 0.862655, -1.2462051,
-      1.0560602, -0.58208317, 0.21609078, -0.05444823, 0.009177956,
-      -9.904169E-4, 6.183535E-5, -1.6981803E-6]
-  })
-};
-
-
 var DEFAULT_LEFT_CENTER = {x: 0.5, y: 0.5};
 var DEFAULT_RIGHT_CENTER = {x: 0.5, y: 0.5};
 
@@ -82,7 +53,29 @@ var DEFAULT_RIGHT_CENTER = {x: 0.5, y: 0.5};
  * params were found.
  */
 function DeviceInfo(deviceParams) {
-  this.viewer = Viewers.CardboardV2;
+  // hack: Default to Google Cardboard v2
+  // Ideally there'd be no default without actual viewer data
+  this.viewer = new CardboardViewer({
+    "vendor": "Google",
+    "model": "Cardboard I/O 2015",
+    "screen_to_lens_distance": 0.03680000081658363,
+    "inter_lens_distance": 0.06199999898672104,
+    "left_eye_field_of_view_angles": [
+      50,
+      50,
+      50,
+      50
+    ],
+    "vertical_alignment": "bottom",
+    "tray_to_lens_distance": 0.03500000014901161,
+    "distortion_coefficients": [
+      0.26260000467300415,
+      0.2678999900817871
+    ],
+    "has_magnet": false,
+    "primary_button": "indirect_touch",
+    "original_url": "goo.gl/R2gCV1"
+  });
   this.updateDeviceParams(deviceParams);
   this.distortion = new Distortion(this.viewer.distortionCoefficients);
 }
@@ -95,8 +88,8 @@ DeviceInfo.prototype.getDevice = function() {
   return this.device;
 };
 
-DeviceInfo.prototype.setViewer = function(viewer) {
-  this.viewer = viewer;
+DeviceInfo.prototype.setViewerProfile = function(profile) {
+  this.viewer = new CardboardViewer(profile);
   this.distortion = new Distortion(this.viewer.distortionCoefficients);
 };
 
@@ -151,10 +144,10 @@ DeviceInfo.prototype.getDistortedFieldOfViewLeftEye = function() {
       distortion.distort(topDist / eyeToScreenDistance)));
 
   return {
-    leftDegrees: Math.min(outerAngle, viewer.fov),
-    rightDegrees: Math.min(innerAngle, viewer.fov),
-    downDegrees: Math.min(bottomAngle, viewer.fov),
-    upDegrees: Math.min(topAngle, viewer.fov)
+    leftDegrees: Math.min(outerAngle, viewer.leftEye.leftFov),
+    rightDegrees: Math.min(innerAngle, viewer.leftEye.rightFov),
+    downDegrees: Math.min(bottomAngle, viewer.leftEye.bottomFov),
+    upDegrees: Math.min(topAngle, viewer.leftEye.topFov)
   };
 };
 
@@ -168,10 +161,10 @@ DeviceInfo.prototype.getLeftEyeVisibleTanAngles = function() {
   var distortion = this.distortion;
 
   // Tan-angles from the max FOV.
-  var fovLeft = Math.tan(-THREE.Math.degToRad(viewer.fov));
-  var fovTop = Math.tan(THREE.Math.degToRad(viewer.fov));
-  var fovRight = Math.tan(THREE.Math.degToRad(viewer.fov));
-  var fovBottom = Math.tan(-THREE.Math.degToRad(viewer.fov));
+  var fovLeft = Math.tan(-THREE.Math.degToRad(viewer.leftEye.leftFov));
+  var fovTop = Math.tan(THREE.Math.degToRad(viewer.leftEye.topFov));
+  var fovRight = Math.tan(THREE.Math.degToRad(viewer.leftEye.rightFov));
+  var fovBottom = Math.tan(-THREE.Math.degToRad(viewer.leftEye.bottomFov));
   // Viewport size.
   var halfWidth = device.widthMeters / 4;
   var halfHeight = device.heightMeters / 2;
@@ -205,10 +198,10 @@ DeviceInfo.prototype.getLeftEyeNoLensTanAngles = function() {
 
   var result = new Float32Array(4);
   // Tan-angles from the max FOV.
-  var fovLeft = distortion.distortInverse(Math.tan(-THREE.Math.degToRad(viewer.fov)));
-  var fovTop = distortion.distortInverse(Math.tan(THREE.Math.degToRad(viewer.fov)));
-  var fovRight = distortion.distortInverse(Math.tan(THREE.Math.degToRad(viewer.fov)));
-  var fovBottom = distortion.distortInverse(Math.tan(-THREE.Math.degToRad(viewer.fov)));
+  var fovLeft = distortion.distortInverse(Math.tan(-THREE.Math.degToRad(viewer.leftEye.leftFov)));
+  var fovTop = distortion.distortInverse(Math.tan(THREE.Math.degToRad(viewer.leftEye.topFov)));
+  var fovRight = distortion.distortInverse(Math.tan(THREE.Math.degToRad(viewer.leftEye.rightFov)));
+  var fovBottom = distortion.distortInverse(Math.tan(-THREE.Math.degToRad(viewer.leftEye.bottomFov)));
   // Viewport size.
   var halfWidth = device.widthMeters / 4;
   var halfHeight = device.heightMeters / 2;
@@ -338,7 +331,7 @@ DeviceInfo.prototype.getUndistortedParams_ = function() {
   var eyePosX = screenWidth / 2 - halfLensDistance;
   var eyePosY = (viewer.baselineLensDistance - device.bevelMeters) / eyeToScreenDistance;
 
-  var maxFov = viewer.fov;
+  var maxFov = viewer.leftEye.maxFov;
   var viewerMax = distortion.distortInverse(Math.tan(THREE.Math.degToRad(maxFov)));
   var outerDist = Math.min(eyePosX, viewerMax);
   var innerDist = Math.min(halfLensDistance, viewerMax);
@@ -356,29 +349,29 @@ DeviceInfo.prototype.getUndistortedParams_ = function() {
 };
 
 
-function CardboardViewer(params) {
-  // A machine readable ID.
-  this.id = params.id;
+function CardboardViewer(profile) {
   // A human readable label.
-  this.label = params.label;
+  this.label = profile.model;
 
   // Field of view in degrees (per side).
-  this.fov = params.fov;
+  var fov = profile.left_eye_field_of_view_angles;
+  this.leftEye = {
+    leftFov: fov[0],
+    rightFov: fov[1],
+    bottomFov: fov[2],
+    topFov: fov[3],
+    maxFov: Math.max.apply(Math, fov)
+  };
 
   // Distance between lens centers in meters.
-  this.interLensDistance = params.interLensDistance;
+  this.interLensDistance = profile.inter_lens_distance;
   // Distance between viewer baseline and lens center in meters.
-  this.baselineLensDistance = params.baselineLensDistance;
+  this.baselineLensDistance = profile.tray_to_lens_distance;
   // Screen-to-lens distance in meters.
-  this.screenLensDistance = params.screenLensDistance;
+  this.screenLensDistance = profile.screen_to_lens_distance;
 
   // Distortion coefficients.
-  this.distortionCoefficients = params.distortionCoefficients;
-  // Inverse distortion coefficients.
-  // TODO: Calculate these from distortionCoefficients in the future.
-  this.inverseCoefficients = params.inverseCoefficients;
+  this.distortionCoefficients = profile.distortion_coefficients;
 }
 
-// Export viewer information.
-DeviceInfo.Viewers = Viewers;
 module.exports = DeviceInfo;

@@ -14,11 +14,9 @@
  */
 
 var Emitter = require('./emitter.js');
-var Util = require('./util.js');
-var DeviceInfo = require('./device-info.js');
 
-var DEFAULT_VIEWER = 'CardboardV1';
-var VIEWER_KEY = 'WEBVR_CARDBOARD_VIEWER';
+var IFRAME_ORIGIN = 'https://embed.whatcardboard.com';
+var IFRAME_URL = IFRAME_ORIGIN + '/v0/1/iframe/';
 var CLASS_NAME = 'webvr-polyfill-viewer-selector';
 
 /**
@@ -26,69 +24,86 @@ var CLASS_NAME = 'webvr-polyfill-viewer-selector';
  * and hidden. Generates events when viewer parameters change. Also supports
  * saving the currently selected index in localStorage.
  */
-function ViewerSelector() {
-  // Try to load the selected key from local storage. If none exists, use the
-  // default key.
-  try {
-    this.selectedKey = localStorage.getItem(VIEWER_KEY) || DEFAULT_VIEWER;
-  } catch (error) {
-    console.error('Failed to load viewer profile: %s', error);
-  }
-  this.dialog = this.createDialog_(DeviceInfo.Viewers);
-  this.root = null;
-}
-ViewerSelector.prototype = new Emitter();
-
-ViewerSelector.prototype.show = function(root) {
+function ViewerSelector(root) {
   this.root = root;
 
-  root.appendChild(this.dialog);
-  //console.log('ViewerSelector.show');
+  this.iframe = document.createElement('iframe');
+  this.iframe.src = IFRAME_URL;
 
-  // Ensure the currently selected item is checked.
-  var selected = this.dialog.querySelector('#' + this.selectedKey);
-  selected.checked = true;
+  this.dialog = this.createDialog_();
 
+  // Buffer messages until iframe is loaded
+  this.messageQueue_ = [];
+  this.iframe.addEventListener('load', this.unqueueMessages_.bind(this));
+
+  window.addEventListener('message', this.receiveMessage_.bind(this));
+}
+ViewerSelector.prototype = new Emitter();
+ViewerSelector.prototype.receiveMessage_ = function(evt) {
+  if (evt.origin == IFRAME_ORIGIN) {
+    return this.handleMessage_(evt.data);
+  }
+};
+ViewerSelector.prototype.handleMessage_ = function(message) {
+  switch (message.type) {
+    case 'ready': return this.handleReadyMessage_(message);
+    case 'deviceprofile': return this.handleDeviceProfileMessage_(message);
+  }
+};
+ViewerSelector.prototype.handleReadyMessage_ = function(message) {
+  if (message.presentable && this.showing_) {
+    this.unhide_();
+  }
+};
+ViewerSelector.prototype.handleDeviceProfileMessage_ = function(message) {
+  this.emit('profile', message.profile);
+};
+ViewerSelector.prototype.postIframeMessage_ = function(message) {
+  return this.iframe.contentWindow.postMessage(message, IFRAME_ORIGIN);
+};
+ViewerSelector.prototype.sendMessage_ = function(message) {
+  if (this.messageQueue_) {
+    this.messageQueue_.push(message);
+  } else {
+    return this.postIframeMessage_(message);
+  }
+};
+ViewerSelector.prototype.unqueueMessages_ = function() {
+  if (this.messageQueue_) {
+    for (var i = 0; i < this.messageQueue_.length; i++) {
+      this.postIframeMessage_(this.messageQueue_[i]);
+    }
+    this.messageQueue_ = null;
+    this.iframe.removeEventListener('load', this.initialIframeLoadListener_);
+  }
+};
+
+ViewerSelector.prototype.unhide_ = function() {
   // Show the UI.
   this.dialog.style.display = 'block';
 };
+ViewerSelector.prototype.show = function(root) {
+  this.root = root;
+
+  // re-establish the message queue,
+  // as moving the iframe in the DOM will cause it to reload
+  this.dialog.parentElement.removeChild(this.dialog);
+  this.messageQueue_ = [];
+  root.appendChild(this.dialog);
+
+  //console.log('ViewerSelector.show');
+  this.showing_ = true;
+  return this.sendMessage_({type: 'present'});
+};
 
 ViewerSelector.prototype.hide = function() {
-  if (this.root && this.root.contains(this.dialog)) {
-    this.root.removeChild(this.dialog);
-  }
+  this.showing_ = false;
   //console.log('ViewerSelector.hide');
   this.dialog.style.display = 'none';
 };
 
-ViewerSelector.prototype.getCurrentViewer = function() {
-  return DeviceInfo.Viewers[this.selectedKey];
-};
-
-ViewerSelector.prototype.getSelectedKey_ = function() {
-  var input = this.dialog.querySelector('input[name=field]:checked');
-  if (input) {
-    return input.id;
-  }
-  return null;
-};
-
-ViewerSelector.prototype.onSave_ = function() {
-  this.selectedKey = this.getSelectedKey_();
-  if (!this.selectedKey || !DeviceInfo.Viewers[this.selectedKey]) {
-    console.error('ViewerSelector.onSave_: this should never happen!');
-    return;
-  }
-
-  this.emit('change', DeviceInfo.Viewers[this.selectedKey]);
-
-  // Attempt to save the viewer profile, but fails in private mode.
-  try {
-    localStorage.setItem(VIEWER_KEY, this.selectedKey);
-  } catch(error) {
-    console.error('Failed to save viewer profile: %s', error);
-  }
-  this.hide();
+ViewerSelector.prototype.queryCurrentViewerProfile = function() {
+  this.sendMessage_({type: 'query'});
 };
 
 /**
@@ -110,90 +125,24 @@ ViewerSelector.prototype.createDialog_ = function(options) {
   s.background = 'rgba(0, 0, 0, 0.3)';
   overlay.addEventListener('click', this.hide.bind(this));
 
-  var width = 280;
-  var dialog = document.createElement('div');
-  var s = dialog.style;
+  s = this.iframe.style;
   s.boxSizing = 'border-box';
   s.position = 'fixed';
   s.top = '24px';
-  s.left = '50%';
-  s.marginLeft = (-width/2) + 'px';
-  s.width = width + 'px';
+  s.left = '25%';
+  s.width = '50%';
+  s.height = '80%';
+  s.right = '24px';
   s.padding = '24px';
-  s.overflow = 'hidden';
   s.background = '#fafafa';
-  s.fontFamily = "'Roboto', sans-serif";
+  s.border = 'none';
   s.boxShadow = '0px 5px 20px #666';
 
-  dialog.appendChild(this.createH1_('Select your viewer'));
-  for (var id in options) {
-    dialog.appendChild(this.createChoice_(id, options[id].label));
-  }
-  dialog.appendChild(this.createButton_('Save', this.onSave_.bind(this)));
-
   container.appendChild(overlay);
-  container.appendChild(dialog);
+  container.appendChild(this.iframe);
+  document.body.appendChild(container);
 
   return container;
-};
-
-ViewerSelector.prototype.createH1_ = function(name) {
-  var h1 = document.createElement('h1');
-  var s = h1.style;
-  s.color = 'black';
-  s.fontSize = '20px';
-  s.fontWeight = 'bold';
-  s.marginTop = 0;
-  s.marginBottom = '24px';
-  h1.innerHTML = name;
-  return h1;
-};
-
-ViewerSelector.prototype.createChoice_ = function(id, name) {
-  /*
-  <div class="choice">
-  <input id="v1" type="radio" name="field" value="v1">
-  <label for="v1">Cardboard V1</label>
-  </div>
-  */
-  var div = document.createElement('div');
-  div.style.marginTop = '8px';
-  div.style.color = 'black';
-
-  var input = document.createElement('input');
-  input.style.fontSize = '30px';
-  input.setAttribute('id', id);
-  input.setAttribute('type', 'radio');
-  input.setAttribute('value', id);
-  input.setAttribute('name', 'field');
-
-  var label = document.createElement('label');
-  label.style.marginLeft = '4px';
-  label.setAttribute('for', id);
-  label.innerHTML = name;
-
-  div.appendChild(input);
-  div.appendChild(label);
-
-  return div;
-};
-
-ViewerSelector.prototype.createButton_ = function(label, onclick) {
-  var button = document.createElement('button');
-  button.innerHTML = label;
-  var s = button.style;
-  s.float = 'right';
-  s.textTransform = 'uppercase';
-  s.color = '#1094f7';
-  s.fontSize = '14px';
-  s.letterSpacing = 0;
-  s.border = 0;
-  s.background = 'none';
-  s.marginTop = '16px';
-
-  button.addEventListener('click', onclick);
-
-  return button;
 };
 
 module.exports = ViewerSelector;
