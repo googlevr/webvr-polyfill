@@ -91,3 +91,8 @@ WebVRConfig = {
 Performance is critical for VR. If you find your application is too sluggish,
 consider tweaking some of the above parameters. In particular, reducing
 `BUFFER_SCALE` to 0.5 (from its default 1.0) will likely help a lot.
+
+## License
+
+This program is free software for both commercial and non-commercial use,
+distributed under the [Apache 2.0 License](LICENSE.md).
