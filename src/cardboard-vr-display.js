@@ -208,4 +208,9 @@ CardboardVRDisplay.prototype.fireVRDisplayDeviceParamsChange_ = function() {
   window.dispatchEvent(event);
 };
 
+// returns the object that handles manual orientation/panning/rotation on behalf of this display
+CardboardVRDisplay.prototype.getManualPannerRef = function() {
+  return this.poseSensor_.touchPanner
+};
+
 module.exports = CardboardVRDisplay;

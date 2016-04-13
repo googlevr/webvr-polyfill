@@ -44,6 +44,10 @@ TouchPanner.prototype.resetSensor = function() {
 };
 
 TouchPanner.prototype.onTouchStart_ = function(e) {
+  if (this.canInitiateRotation(e) === false) {
+    return;
+  }
+
   // Only respond if there is exactly one touch.
   if (e.touches.length != 1) {
     return;
@@ -71,6 +75,11 @@ TouchPanner.prototype.onTouchMove_ = function(e) {
 
 TouchPanner.prototype.onTouchEnd_ = function(e) {
   this.isTouching = false;
+};
+
+// override to dynamically allow/deny user input to control pan/rotation (e.g. based on event target)
+TouchPanner.prototype.canInitiateRotation = function(e) {
+  return true;
 };
 
 module.exports = TouchPanner;

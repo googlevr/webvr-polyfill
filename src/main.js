@@ -59,9 +59,9 @@ window.WebVRConfig = Util.extend({
 }, window.WebVRConfig);
 
 if (!window.WebVRConfig.DEFER_INITIALIZATION) {
-  new WebVRPolyfill();
+  window._webVRPolyfill = new WebVRPolyfill();
 } else {
   window.InitializeWebVRPolyfill = function() {
-    new WebVRPolyfill();
+    window._webVRPolyfill = new WebVRPolyfill();
   }
 }

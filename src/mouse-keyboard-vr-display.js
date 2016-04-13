@@ -82,6 +82,10 @@ MouseKeyboardVRDisplay.prototype.getImmediatePose = function() {
 };
 
 MouseKeyboardVRDisplay.prototype.onKeyDown_ = function(e) {
+  if (this.canInitiateRotation(e) === false) {
+    return true;
+  }
+
   // Track WASD and arrow keys.
   if (e.keyCode == 38) { // Up key.
     this.animatePhi_(this.phi_ + KEY_SPEED);
@@ -130,6 +134,8 @@ MouseKeyboardVRDisplay.prototype.animateKeyTransitions_ = function(angleName, ta
 };
 
 MouseKeyboardVRDisplay.prototype.onMouseDown_ = function(e) {
+  if (this.canInitiateRotation(e) === false) return true;
+
   this.rotateStart_.set(e.clientX, e.clientY);
   this.isDragging_ = true;
 };
@@ -172,6 +178,16 @@ MouseKeyboardVRDisplay.prototype.isPointerLocked_ = function() {
 MouseKeyboardVRDisplay.prototype.resetPose = function() {
   this.phi_ = 0;
   this.theta_ = 0;
+};
+
+// returns the object that handles manual orientation/panning/rotation on behalf of this display
+MouseKeyboardVRDisplay.prototype.getManualPannerRef = function() {
+  return this
+};
+
+// override to dynamically allow/deny user input to control pan/rotation (e.g. based on event target)
+MouseKeyboardVRDisplay.prototype.canInitiateRotation = function(e) {
+  return true;
 };
 
 module.exports = MouseKeyboardVRDisplay;
