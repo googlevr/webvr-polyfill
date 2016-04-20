@@ -128,13 +128,15 @@ CardboardVRDisplay.prototype.beginPresent_ = function() {
     }
   }
 
-  this.cardboardUI_.listen(function() {
-    // Options clicked
-    this.viewerSelector_.show(this.layer_.source.parentElement);
-  }.bind(this), function() {
-    // Back clicked
-    this.exitPresent();
-  }.bind(this));
+  if (WebVRConfig.CARDBOARD_UI) {
+    this.cardboardUI_.listen(function() {
+      // Options clicked
+      this.viewerSelector_.show(this.layer_.source.parentElement);
+    }.bind(this), function() {
+      // Back clicked
+      this.exitPresent();
+    }.bind(this));
+  }
 
   if (Util.isLandscapeMode() && Util.isMobile()) {
     // In landscape mode, temporarily show the "put into Cardboard"

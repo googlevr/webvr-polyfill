@@ -73,8 +73,9 @@ var Angles = [
 ];
 
 /**
- * Renders the alignment line and "options" gear. It is assumed that the canvas
- * this is rendered into covers the entire screen (or close to it.)
+ * Renders the alignment line, back button, and "options" gear.
+ * It is assumed that the canvas this is rendered into covers the
+ * entire screen (or close to it).
  */
 function CardboardUI(gl) {
   this.gl = gl;
@@ -138,6 +139,10 @@ CardboardUI.prototype.listen = function(optionsCallback, backCallback) {
  * Builds the UI mesh.
  */
 CardboardUI.prototype.onResize = function() {
+  if (!this.listener) {
+    return;
+  }
+
   var gl = this.gl;
   var self = this;
 
