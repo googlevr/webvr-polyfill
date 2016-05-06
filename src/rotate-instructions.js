@@ -108,10 +108,12 @@ RotateInstructions.prototype.show = function(parent) {
     s.marginLeft = '25%';
     s.marginTop = '25%';
   }
+  window.dispatchEvent(new CustomEvent('vrinstructionsshown'))
 };
 
 RotateInstructions.prototype.hide = function() {
   this.overlay.style.display = 'none';
+  window.dispatchEvent(new CustomEvent('vrinstructionshidden'))
 };
 
 RotateInstructions.prototype.showTemporarily = function(ms, parent) {

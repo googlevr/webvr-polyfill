@@ -26,7 +26,9 @@ to make the VR experience more intuitive, including:
 - A gear icon to select your VR viewer.
 - A back button to exit VR mode.
 - An interstitial which only appears in portrait orientation, requesting you switch
-  into landscape orientation (if [orientation lock][ol] is not available).
+  into landscape orientation (if [orientation lock][ol] is not available). The interstitial
+  emits 'vrinstructionsshown' and 'vrinstructionshidden' custom events on the window
+  when showing and hiding itself.
 
 `MouseKeyboardVRDisplay` uses mouse events to allow you to do the equivalent of
 mouselook. It also uses keyboard arrows keys to look around the scene
