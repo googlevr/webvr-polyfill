@@ -53,7 +53,7 @@ function CardboardVRDisplay() {
   this.deviceInfo_.setViewer(this.viewerSelector_.getCurrentViewer());
 
   this.injectPresentModeCssClass_();
-  if (!WebVRConfig.ROTATE_INSTRUCTIONS_DISABLED) {
+  if (WebVRConfig.ROTATE_INSTRUCTIONS) {
     this.rotateInstructions_ = new RotateInstructions();
   }
 }
@@ -119,7 +119,7 @@ CardboardVRDisplay.prototype.beginPresent_ = function() {
 
   // Provides a way to opt out of distortion
   if (this.layer_.predistorted) {
-    if (!WebVRConfig.CARDBOARD_UI_DISABLED) {
+    if (WebVRConfig.CARDBOARD_UI) {
       this.cardboardUI_ = new CardboardUI(gl);
     }
   } else {

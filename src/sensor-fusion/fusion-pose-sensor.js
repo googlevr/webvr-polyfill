@@ -82,7 +82,7 @@ FusionPoseSensor.prototype.getOrientation = function() {
   var out = new MathUtil.Quaternion();
   out.copy(this.filterToWorldQ);
   out.multiply(this.resetQ);
-  if (!WebVRConfig.TOUCH_PANNER_DISABLED) {
+  if (WebVRConfig.TOUCH_PANNER) {
     out.multiply(this.touchPanner.getOrientation());
   }
   out.multiply(this.predictedQ);
@@ -115,7 +115,7 @@ FusionPoseSensor.prototype.resetPose = function() {
   this.resetQ.z *= -1;
   this.resetQ.normalize();
 
-  if (!WebVRConfig.TOUCH_PANNER_DISABLED) {
+  if (WebVRConfig.TOUCH_PANNER) {
     this.touchPanner.resetSensor();
   }
 };

@@ -117,7 +117,7 @@ function CardboardDistorter(gl) {
 
   this.onResize();
 
-  if (!WebVRConfig.CARDBOARD_UI_DISABLED) {
+  if (WebVRConfig.CARDBOARD_UI) {
     this.cardboardUI = new CardboardUI(gl);
   }
 };
