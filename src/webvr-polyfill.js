@@ -37,7 +37,7 @@ function WebVRPolyfill() {
     if (!this.nativeWebVRAvailable) {
       this.enablePolyfill();
     }
-    if (WebVRConfig.ENABLE_DEPRECATED_API) {
+    if (WebVRConfig.USE_DEPRECATED_API) {
       this.enableDeprecatedPolyfill();
     }
   }
@@ -65,26 +65,26 @@ WebVRPolyfill.prototype.populateDevices = function() {
     this.displays.push(vrDisplay);
 
     // For backwards compatibility
-    if (WebVRConfig.ENABLE_DEPRECATED_API) {
+    if (WebVRConfig.USE_DEPRECATED_API) {
       this.devices.push(new VRDisplayHMDDevice(vrDisplay));
       this.devices.push(new VRDisplayPositionSensorDevice(vrDisplay));
     }
   }
 
   // Add a Mouse and Keyboard driven VRDisplay for desktops/laptops
-  if (!this.isMobile() && !WebVRConfig.MOUSE_KEYBOARD_CONTROLS_DISABLED) {
+  if (!this.isMobile() && WebVRConfig.MOUSE_KEYBOARD_CONTROLS) {
     vrDisplay = new MouseKeyboardVRDisplay();
     this.displays.push(vrDisplay);
 
     // For backwards compatibility
-    if (WebVRConfig.ENABLE_DEPRECATED_API) {
+    if (WebVRConfig.USE_DEPRECATED_API) {
       this.devices.push(new VRDisplayHMDDevice(vrDisplay));
       this.devices.push(new VRDisplayPositionSensorDevice(vrDisplay));
     }
   }
 
   // Uncomment to add positional tracking via webcam.
-  //if (!this.isMobile() && WebVRConfig.ENABLE_DEPRECATED_API) {
+  //if (!this.isMobile() && WebVRConfig.USE_DEPRECATED_API) {
   //  positionDevice = new WebcamPositionSensorVRDevice();
   //  this.devices.push(positionDevice);
   //}
@@ -173,7 +173,7 @@ WebVRPolyfill.prototype.isMobile = function() {
 WebVRPolyfill.prototype.isCardboardCompatible = function() {
   // For now, support all iOS and Android devices.
   // Also enable the WebVRConfig.FORCE_VR flag for debugging.
-  return this.isMobile() || WebVRConfig.FORCE_ENABLE_VR;
+  return this.isMobile() || WebVRConfig.ENABLE_VR;
 };
 
 module.exports = WebVRPolyfill;
