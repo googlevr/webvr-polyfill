@@ -2604,7 +2604,7 @@ CardboardVRDisplay.prototype.injectPresentModeCssClass_ = function() {
     'left: 0 !important',
     'right: 0 !important',
     'bottom: 0 !important',
-    'z-index: 999999 !important',
+    'z-index: 100 !important',
     'position: fixed',
   ];
   var style = document.createElement('style');
@@ -6189,6 +6189,7 @@ ViewerSelector.prototype.createDialog_ = function(options) {
   s.width = '100%';
   s.height = '100%';
   s.background = 'rgba(0, 0, 0, 0.3)';
+  s.zIndex = 110;
   overlay.addEventListener('click', this.hide.bind(this));
 
   var width = 280;
@@ -6205,6 +6206,7 @@ ViewerSelector.prototype.createDialog_ = function(options) {
   s.background = '#fafafa';
   s.fontFamily = "'Roboto', sans-serif";
   s.boxShadow = '0px 5px 20px #666';
+  s.zIndex = 120;
 
   dialog.appendChild(this.createH1_('Select your viewer'));
   for (var id in options) {
