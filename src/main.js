@@ -63,7 +63,10 @@ window.WebVRConfig = Util.extend({
   // Dirty bindings include: gl.FRAMEBUFFER_BINDING, gl.CURRENT_PROGRAM,
   // gl.ARRAY_BUFFER_BINDING, gl.ELEMENT_ARRAY_BUFFER_BINDING,
   // and gl.TEXTURE_BINDING_2D for texture unit 0.
-  DIRTY_SUBMIT_FRAME_BINDINGS: false
+  DIRTY_SUBMIT_FRAME_BINDINGS: false,
+
+  // Enable the fetch of the online version of the DPDB
+  DPDB_FETCH_ONLINE: true
 }, window.WebVRConfig);
 
 if (!window.WebVRConfig.DEFER_INITIALIZATION) {
