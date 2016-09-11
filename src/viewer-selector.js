@@ -17,7 +17,6 @@ var Emitter = require('./emitter.js');
 var Util = require('./util.js');
 var DeviceInfo = require('./device-info.js');
 
-var DEFAULT_VIEWER = 'CardboardV1';
 var VIEWER_KEY = 'WEBVR_CARDBOARD_VIEWER';
 var CLASS_NAME = 'webvr-polyfill-viewer-selector';
 
@@ -30,7 +29,7 @@ function ViewerSelector() {
   // Try to load the selected key from local storage. If none exists, use the
   // default key.
   try {
-    this.selectedKey = localStorage.getItem(VIEWER_KEY) || DEFAULT_VIEWER;
+    this.selectedKey = localStorage.getItem(VIEWER_KEY) || WebVRConfig.DEFAULT_CARDBOARD_VIEWER;
   } catch (error) {
     console.error('Failed to load viewer profile: %s', error);
   }

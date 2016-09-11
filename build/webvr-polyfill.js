@@ -1934,7 +1934,9 @@ var DEFAULT_IOS = new Device({
 });
 
 
-var Viewers = {
+var Viewers = undefined;
+
+var DEFAULT_VIEWERS = {
   CardboardV1: new CardboardViewer({
     id: 'CardboardV1',
     label: 'Cardboard I/O 2014',
@@ -1942,10 +1944,7 @@ var Viewers = {
     interLensDistance: 0.060,
     baselineLensDistance: 0.035,
     screenLensDistance: 0.042,
-    distortionCoefficients: [0.441, 0.156],
-    inverseCoefficients: [-0.4410035, 0.42756155, -0.4804439, 0.5460139,
-      -0.58821183, 0.5733938, -0.48303202, 0.33299083, -0.17573841,
-      0.0651772, -0.01488963, 0.001559834]
+    distortionCoefficients: [0.441, 0.156]
   }),
   CardboardV2: new CardboardViewer({
     id: 'CardboardV2',
@@ -1954,16 +1953,10 @@ var Viewers = {
     interLensDistance: 0.064,
     baselineLensDistance: 0.035,
     screenLensDistance: 0.039,
-    distortionCoefficients: [0.34, 0.55],
-    inverseCoefficients: [-0.33836704, -0.18162185, 0.862655, -1.2462051,
-      1.0560602, -0.58208317, 0.21609078, -0.05444823, 0.009177956,
-      -9.904169E-4, 6.183535E-5, -1.6981803E-6]
+    distortionCoefficients: [0.34, 0.55]
   })
 };
 
-
-var DEFAULT_LEFT_CENTER = {x: 0.5, y: 0.5};
-var DEFAULT_RIGHT_CENTER = {x: 0.5, y: 0.5};
 
 /**
  * Manages information about the device and the viewer.
@@ -1973,7 +1966,7 @@ var DEFAULT_RIGHT_CENTER = {x: 0.5, y: 0.5};
  * params were found.
  */
 function DeviceInfo(deviceParams) {
-  this.viewer = Viewers.CardboardV2;
+  this.viewer = DEFAULT_VIEWERS.CardboardV2;
   this.updateDeviceParams(deviceParams);
   this.distortion = new Distortion(this.viewer.distortionCoefficients);
 }
@@ -2246,13 +2239,24 @@ function CardboardViewer(params) {
 
   // Distortion coefficients.
   this.distortionCoefficients = params.distortionCoefficients;
-  // Inverse distortion coefficients.
-  // TODO: Calculate these from distortionCoefficients in the future.
-  this.inverseCoefficients = params.inverseCoefficients;
 }
 
 // Export viewer information.
-DeviceInfo.Viewers = Viewers;
+Object.defineProperty(DeviceInfo, 'Viewers', {
+  configurable: true,
+  enumerable: true,
+  get: function() {
+    if (!Viewers) {
+      // generate viewer
+      Viewers = Util.extend(DEFAULT_VIEWERS,
+        WebVRConfig.CARDBOARD_VIEWERS.reduce(function(viewers, params) {
+          viewers[params.id] = new CardboardViewer(params);
+          return viewers;
+        }, {}));
+    }
+    return Viewers;
+  }
+});
 module.exports = DeviceInfo;
 
 },{"./distortion/distortion.js":9,"./math-util.js":14,"./util.js":22}],8:[function(_dereq_,module,exports){
@@ -3801,7 +3805,29 @@ window.WebVRConfig = Util.extend({
   // Dirty bindings include: gl.FRAMEBUFFER_BINDING, gl.CURRENT_PROGRAM,
   // gl.ARRAY_BUFFER_BINDING, gl.ELEMENT_ARRAY_BUFFER_BINDING,
   // and gl.TEXTURE_BINDING_2D for texture unit 0.
-  DIRTY_SUBMIT_FRAME_BINDINGS: false
+  DIRTY_SUBMIT_FRAME_BINDINGS: false,
+
+  // Add additional Cardboard viewer options
+  // CardboardV1 and CardboardV2 are current built-in viewers
+  // Viewer option example:
+  // ```
+  // {
+  //   id: 'CardboardV1',
+  //   label: 'Cardboard I/O 2014',
+  //   fov: 40,
+  //   interLensDistance: 0.060,
+  //   baselineLensDistance: 0.035,
+  //   screenLensDistance: 0.042,
+  //   distortionCoefficients: [0.441, 0.156]
+  // }
+  // ```
+  // generate profile for unsupported viewer:
+  // https://vr.google.com/cardboard/viewerprofilegenerator/
+  CARDBOARD_VIEWERS: [],
+
+  // Default cardboard viewer
+  DEFAULT_CARDBOARD_VIEWER: 'CardboardV1'
+
 }, window.WebVRConfig);
 
 if (!window.WebVRConfig.DEFER_INITIALIZATION) {
@@ -5265,7 +5291,6 @@ var Emitter = _dereq_('./emitter.js');
 var Util = _dereq_('./util.js');
 var DeviceInfo = _dereq_('./device-info.js');
 
-var DEFAULT_VIEWER = 'CardboardV1';
 var VIEWER_KEY = 'WEBVR_CARDBOARD_VIEWER';
 var CLASS_NAME = 'webvr-polyfill-viewer-selector';
 
@@ -5278,7 +5303,7 @@ function ViewerSelector() {
   // Try to load the selected key from local storage. If none exists, use the
   // default key.
   try {
-    this.selectedKey = localStorage.getItem(VIEWER_KEY) || DEFAULT_VIEWER;
+    this.selectedKey = localStorage.getItem(VIEWER_KEY) || WebVRConfig.DEFAULT_CARDBOARD_VIEWER;
   } catch (error) {
     console.error('Failed to load viewer profile: %s', error);
   }

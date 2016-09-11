@@ -87,7 +87,26 @@ WebVRConfig = {
   // Dirty bindings include: gl.FRAMEBUFFER_BINDING, gl.CURRENT_PROGRAM,
   // gl.ARRAY_BUFFER_BINDING, gl.ELEMENT_ARRAY_BUFFER_BINDING,
   // and gl.TEXTURE_BINDING_2D for texture unit 0.
-  DIRTY_SUBMIT_FRAME_BINDINGS: true // Default: false.
+  DIRTY_SUBMIT_FRAME_BINDINGS: true, // Default: false.
+
+  // Add additional Cardboard viewer options
+  // CardboardV1 and CardboardV2 are current built-in viewers
+  // generate parameters for unsupported viewer:
+  // https://vr.google.com/cardboard/viewerprofilegenerator/
+  CARDBOARD_VIEWERS: [
+  {
+    id: 'VRBox',
+    label: 'VR Box',
+    fov: 50,
+    interLensDistance: 0.061,
+    baselineLensDistance: 0.035,
+    screenLensDistance: 0.044,
+    distortionCoefficients: [0.1, 0.02]
+  }
+  ], // Default: []
+
+  // Default cardboard viewer
+  DEFAULT_CARDBOARD_VIEWER: 'CardboardV1' // Default: 'CardboardV1'
 }
 ```
 
