@@ -330,17 +330,27 @@ VRDisplay.prototype.addFullscreenListeners_ = function(element, changeHandler, e
   this.fullscreenErrorHandler_ = errorHandler;
 
   if (changeHandler) {
-    if (document.fullscreenEnabled) element.addEventListener('fullscreenchange', changeHandler, false);
-	  else if (document.webkitFullscreenEnabled) element.addEventListener('webkitfullscreenchange', changeHandler, false);
-	  else if (document.mozFullscreenEnabled) document.addEventListener('mozfullscreenchange', changeHandler, false);
-	  else if (document.msFullscreenEnabled) element.addEventListener('msfullscreenchange', changeHandler, false);
+    if (document.fullscreenEnabled) {
+      element.addEventListener('fullscreenchange', changeHandler, false);
+    } else if (document.webkitFullscreenEnabled) {
+      element.addEventListener('webkitfullscreenchange', changeHandler, false);
+    } else if (document.mozFullScreenEnabled) {
+      document.addEventListener('mozfullscreenchange', changeHandler, false);
+    } else if (document.msFullscreenEnabled) {
+      element.addEventListener('msfullscreenchange', changeHandler, false);
+    }
   }
 
   if (errorHandler) {
-    if (document.fullscreenEnabled) element.addEventListener('fullscreenerror', errorHandler, false);
-	  else if (document.webkitFullscreenEnabled) element.addEventListener('webkitfullscreenerror', errorHandler, false);
-	  else if (document.mozFullscreenEnabled) document.addEventListener('mozfullscreenerror', errorHandler, false);
-	  else if (document.msFullscreenEnabled) element.addEventListener('msfullscreenerror', errorHandler, false);
+    if (document.fullscreenEnabled) {
+      element.addEventListener('fullscreenerror', errorHandler, false);
+    } else if (document.webkitFullscreenEnabled) {
+      element.addEventListener('webkitfullscreenerror', errorHandler, false);
+    } else if (document.mozFullScreenEnabled) {
+      document.addEventListener('mozfullscreenerror', errorHandler, false);
+    } else if (document.msFullscreenEnabled) {
+      element.addEventListener('msfullscreenerror', errorHandler, false);
+    }
   }
 };
 
