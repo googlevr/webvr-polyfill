@@ -149,6 +149,11 @@ CardboardVRDisplay.prototype.beginPresent_ = function() {
       e.preventDefault();
     }.bind(this), function(e) {
       // Back clicked.
+
+      // In case of a custom calllback defined by the user, trigger it
+      if (typeof WebVRConfig.BACKACTION_CALLBACK === 'function') {
+        WebVRConfig.BACKACTION_CALLBACK();
+      }
       this.exitPresent();
       e.stopPropagation();
       e.preventDefault();

@@ -87,7 +87,13 @@ WebVRConfig = {
   // Dirty bindings include: gl.FRAMEBUFFER_BINDING, gl.CURRENT_PROGRAM,
   // gl.ARRAY_BUFFER_BINDING, gl.ELEMENT_ARRAY_BUFFER_BINDING,
   // and gl.TEXTURE_BINDING_2D for texture unit 0.
-  DIRTY_SUBMIT_FRAME_BINDINGS: true // Default: false.
+  DIRTY_SUBMIT_FRAME_BINDINGS: true, // Default: false.
+
+  // A custom callback which will be called when the User triggers the back
+  // button in the CARDBOARD_UI
+  BACKACTION_CALLBACK: function() {
+    //some code
+  }, // Default: undefined.
 }
 ```
 
