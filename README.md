@@ -93,7 +93,7 @@ WebVRConfig = {
   // button in the CARDBOARD_UI
   BACKACTION_CALLBACK: function() {
     //some code
-  }, // Default: undefined.
+  } // Default: undefined.
 }
 ```
 
