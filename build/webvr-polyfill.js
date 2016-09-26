@@ -416,17 +416,27 @@ VRDisplay.prototype.addFullscreenListeners_ = function(element, changeHandler, e
   this.fullscreenErrorHandler_ = errorHandler;
 
   if (changeHandler) {
-    element.addEventListener('fullscreenchange', changeHandler, false);
-    element.addEventListener('webkitfullscreenchange', changeHandler, false);
-    document.addEventListener('mozfullscreenchange', changeHandler, false);
-    element.addEventListener('msfullscreenchange', changeHandler, false);
+    if (document.fullscreenEnabled) {
+      element.addEventListener('fullscreenchange', changeHandler, false);
+    } else if (document.webkitFullscreenEnabled) {
+      element.addEventListener('webkitfullscreenchange', changeHandler, false);
+    } else if (document.mozFullScreenEnabled) {
+      document.addEventListener('mozfullscreenchange', changeHandler, false);
+    } else if (document.msFullscreenEnabled) {
+      element.addEventListener('msfullscreenchange', changeHandler, false);
+    }
   }
 
   if (errorHandler) {
-    element.addEventListener('fullscreenerror', errorHandler, false);
-    element.addEventListener('webkitfullscreenerror', errorHandler, false);
-    document.addEventListener('mozfullscreenerror', errorHandler, false);
-    element.addEventListener('msfullscreenerror', errorHandler, false);
+    if (document.fullscreenEnabled) {
+      element.addEventListener('fullscreenerror', errorHandler, false);
+    } else if (document.webkitFullscreenEnabled) {
+      element.addEventListener('webkitfullscreenerror', errorHandler, false);
+    } else if (document.mozFullScreenEnabled) {
+      document.addEventListener('mozfullscreenerror', errorHandler, false);
+    } else if (document.msFullscreenEnabled) {
+      element.addEventListener('msfullscreenerror', errorHandler, false);
+    }
   }
 };
 
@@ -1595,6 +1605,11 @@ CardboardVRDisplay.prototype.beginPresent_ = function() {
       e.preventDefault();
     }.bind(this), function(e) {
       // Back clicked.
+
+      // In case of a custom calllback defined by the user, trigger it
+      if (typeof WebVRConfig.BACKACTION_CALLBACK === 'function') {
+        WebVRConfig.BACKACTION_CALLBACK();
+      }
       this.exitPresent();
       e.stopPropagation();
       e.preventDefault();
@@ -1973,6 +1988,13 @@ var DEFAULT_RIGHT_CENTER = {x: 0.5, y: 0.5};
  * params were found.
  */
 function DeviceInfo(deviceParams) {
+  if (WebVRConfig.ADDITIONAL_VIEWERS instanceof Array) {
+    var newViewer;
+    for (var i = 0; i < WebVRConfig.ADDITIONAL_VIEWERS.length; i++) {
+      newViewer = WebVRConfig.ADDITIONAL_VIEWERS[i];
+      Viewers[newViewer.id] = new CardboardViewer(newViewer);
+    }
+  }
   this.viewer = Viewers.CardboardV2;
   this.updateDeviceParams(deviceParams);
   this.distortion = new Distortion(this.viewer.distortionCoefficients);
