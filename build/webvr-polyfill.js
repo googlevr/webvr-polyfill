@@ -1606,11 +1606,13 @@ CardboardVRDisplay.prototype.beginPresent_ = function() {
     }.bind(this), function(e) {
       // Back clicked.
 
-      // In case of a custom calllback defined by the user, trigger it
-      if (typeof WebVRConfig.BACKACTION_CALLBACK === 'function') {
-        WebVRConfig.BACKACTION_CALLBACK();
-      }
-      this.exitPresent();
+      this.exitPresent().then(function () {
+        // In case of a custom calllback defined by the user, trigger it
+        if (typeof WebVRConfig.BACKACTION_CALLBACK === 'function') {
+          WebVRConfig.BACKACTION_CALLBACK();
+        }
+      });
+
       e.stopPropagation();
       e.preventDefault();
     }.bind(this));
