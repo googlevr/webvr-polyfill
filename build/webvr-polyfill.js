@@ -1682,12 +1682,11 @@ CardboardVRDisplay.prototype.onResize_ = function(e) {
     // hide the URL bar unless content is bigger than the screen.
     // This will not be visible as long as the container element (e.g. body)
     // is set to 'overflow: hidden'.
-    var padding;
+    var padding = '0';
     if (Util.isIOS()) {
       padding = '0 10px 10px 0';
-    } else {
-      padding = '0';
     }
+
     var cssProperties = [
       'position: absolute',
       'top: 0',
