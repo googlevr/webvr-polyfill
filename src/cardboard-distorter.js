@@ -43,6 +43,16 @@ var distortionFS = [
   '}',
 ].join('\n');
 
+// Vertex attribute state
+var va = 0;
+var vaBuff = [null, null];
+var vaEnabled = [null, null];
+var vaOffset = [null, null];
+var vaSize = [null, null];
+var vaStride = [null, null];
+var vaType = [null, null];
+var vaNorm = [null, null];
+
 /**
  * A mesh-based distorter.
  */
@@ -441,6 +451,19 @@ CardboardDistorter.prototype.submitFrame = function() {
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, self.indexBuffer);
 
+    // Polyfill only uses first 2 attribs, so we store their original values
+    for(va=0; va<2; va++) {
+        vaEnabled[va] = gl.getVertexAttrib(va, gl.VERTEX_ATTRIB_ARRAY_ENABLED);
+        if (vaEnabled[va]) {
+            vaSize[va] =     gl.getVertexAttrib(va, gl.VERTEX_ATTRIB_ARRAY_SIZE);
+            vaStride[va] =   gl.getVertexAttrib(va, gl.VERTEX_ATTRIB_ARRAY_STRIDE);
+            vaType[va] =     gl.getVertexAttrib(va, gl.VERTEX_ATTRIB_ARRAY_TYPE);
+            vaNorm[va] =     gl.getVertexAttrib(va, gl.VERTEX_ATTRIB_ARRAY_NORMALIZED);
+            vaOffset[va] =   gl.getVertexAttribOffset(va, gl.VERTEX_ATTRIB_ARRAY_POINTER);
+            vaBuff[va] =     gl.getVertexAttrib(va, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING);
+        }
+    }
+
     gl.bindBuffer(gl.ARRAY_BUFFER, self.vertexBuffer);
     gl.enableVertexAttribArray(self.attribs.position);
     gl.enableVertexAttribArray(self.attribs.texCoord);
@@ -480,6 +503,23 @@ CardboardDistorter.prototype.submitFrame = function() {
     if (self.scissorTest) { self.realEnable.call(gl, gl.SCISSOR_TEST); }
     if (self.stencilTest) { self.realEnable.call(gl, gl.STENCIL_TEST); }
 
+     // Restore vertex attribute state
+    for(va=0; va<2; va++) {
+        if (vaEnabled[va]) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, vaBuff[va]);
+            gl.enableVertexAttribArray(va);
+            gl.vertexAttribPointer(
+                va,
+                vaSize[va],
+                vaType[va],
+                vaNorm[va],
+                vaStride[va],
+                vaOffset[va]
+            );
+        } else {
+            gl.disableVertexAttribArray(va);
+        }
+    }
     self.realColorMask.apply(gl, self.colorMask);
     self.realViewport.apply(gl, self.viewport);
     if (self.ctxAttribs.alpha || !self.ctxAttribs.preserveDrawingBuffer) {
