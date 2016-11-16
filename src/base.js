@@ -286,7 +286,7 @@ VRDisplay.prototype.requestPresent = function(layers) {
       if (Util.requestFullscreen(fullscreenElement)) {
         self.wakelock_.request();
         self.waitingForPresent_ = true;
-      } else if (Util.isIOS()) {
+      } else if (Util.isIOS() || Util.isWebViewAndroid()) {
         // *sigh* Just fake it.
         self.wakelock_.request();
         self.isPresenting = true;
@@ -313,6 +313,13 @@ VRDisplay.prototype.exitPresent = function() {
   return new Promise(function(resolve, reject) {
     if (wasPresenting) {
       if (!Util.exitFullscreen() && Util.isIOS()) {
+        self.endPresent_();
+        self.fireVRDisplayPresentChange_();
+      }
+
+      if(Util.isWebViewAndroid()) {
+        self.removeFullscreenWrapper();
+        self.removeFullscreenListeners_();
         self.endPresent_();
         self.fireVRDisplayPresentChange_();
       }
