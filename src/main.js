@@ -63,7 +63,29 @@ window.WebVRConfig = Util.extend({
   // Dirty bindings include: gl.FRAMEBUFFER_BINDING, gl.CURRENT_PROGRAM,
   // gl.ARRAY_BUFFER_BINDING, gl.ELEMENT_ARRAY_BUFFER_BINDING,
   // and gl.TEXTURE_BINDING_2D for texture unit 0.
-  DIRTY_SUBMIT_FRAME_BINDINGS: false
+  DIRTY_SUBMIT_FRAME_BINDINGS: false,
+
+  // Add additional Cardboard viewer options
+  // CardboardV1 and CardboardV2 are current built-in viewers
+  // Viewer parameters example:
+  // ```
+  // {
+  //   id: 'CardboardV1',
+  //   label: 'Cardboard I/O 2014',
+  //   fov: 40,
+  //   interLensDistance: 0.060,
+  //   baselineLensDistance: 0.035,
+  //   screenLensDistance: 0.042,
+  //   distortionCoefficients: [0.441, 0.156]
+  // }
+  // ```
+  // generate parameters for unsupported viewer:
+  // https://vr.google.com/cardboard/viewerprofilegenerator/
+  CARDBOARD_VIEWERS: [],
+
+  // Default cardboard viewer
+  DEFAULT_CARDBOARD_VIEWER: 'CardboardV1'
+
 }, window.WebVRConfig);
 
 if (!window.WebVRConfig.DEFER_INITIALIZATION) {
