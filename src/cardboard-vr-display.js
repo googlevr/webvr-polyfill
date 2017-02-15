@@ -245,6 +245,7 @@ CardboardVRDisplay.prototype.onResize_ = function(e) {
       'border: 0',
       'margin: 0',
       'padding: 0 10px 10px 0',
+      'box-sizing: content-box'
     ];
     gl.canvas.setAttribute('style', cssProperties.join('; ') + ';');
 
