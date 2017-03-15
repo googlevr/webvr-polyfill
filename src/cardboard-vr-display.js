@@ -151,7 +151,14 @@ CardboardVRDisplay.prototype.beginPresent_ = function() {
       e.preventDefault();
     }.bind(this), function(e) {
       // Back clicked.
-      this.exitPresent();
+
+      this.exitPresent().then(function () {
+        // In case of a custom calllback defined by the user, trigger it
+        if (typeof WebVRConfig.BACKACTION_CALLBACK === 'function') {
+          WebVRConfig.BACKACTION_CALLBACK();
+        }
+      });
+
       e.stopPropagation();
       e.preventDefault();
     }.bind(this));
@@ -237,6 +244,12 @@ CardboardVRDisplay.prototype.onResize_ = function(e) {
     // hide the URL bar unless content is bigger than the screen.
     // This will not be visible as long as the container element (e.g. body)
     // is set to 'overflow: hidden'.
+    var padding;
+    if (Util.isIOS()) {
+      padding = '0 10px 10px 0';
+    } else {
+      padding = '0';
+    }
     var cssProperties = [
       'position: absolute',
       'top: 0',
@@ -245,7 +258,7 @@ CardboardVRDisplay.prototype.onResize_ = function(e) {
       'height: ' + Math.min(screen.height, screen.width) + 'px',
       'border: 0',
       'margin: 0',
-      'padding: 0 10px 10px 0',
+      'padding:' + padding,
     ];
     gl.canvas.setAttribute('style', cssProperties.join('; ') + ';');
 

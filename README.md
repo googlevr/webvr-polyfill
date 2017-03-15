@@ -87,7 +87,31 @@ WebVRConfig = {
   // Dirty bindings include: gl.FRAMEBUFFER_BINDING, gl.CURRENT_PROGRAM,
   // gl.ARRAY_BUFFER_BINDING, gl.ELEMENT_ARRAY_BUFFER_BINDING,
   // and gl.TEXTURE_BINDING_2D for texture unit 0.
-  DIRTY_SUBMIT_FRAME_BINDINGS: true // Default: false.
+  DIRTY_SUBMIT_FRAME_BINDINGS: true, // Default: false.
+
+  // A custom callback which will be called when the User triggers the back
+  // button in the CARDBOARD_UI
+  BACKACTION_CALLBACK: function() {
+    //some code
+  }, // Default: undefined.
+
+  // A list of additional viewers, if the two different CardboardViewers in
+  // the polyfill aren't enough. Can be choosen via the gear icon in the
+  // CARDBOARD_UI
+  ADDITIONAL_VIEWERS: [
+    {
+      id: 'BoboVRZ2',
+      label: 'Bobo VR Z2',
+      fov: 55,
+      interLensDistance: 0.066,
+      baselineLensDistance: 0.035,
+      screenLensDistance: 0.045,
+      distortionCoefficients: [0.15, 0.01],
+      inverseCoefficients: [-0.4410035, 0.42756155, -0.4804439, 0.5460139,
+        -0.58821183, 0.5733938, -0.48303202, 0.33299083, -0.17573841,
+        0.0651772, -0.01488963, 0.001559834]
+    }
+  ] // Default: undefined.
 }
 ```
 

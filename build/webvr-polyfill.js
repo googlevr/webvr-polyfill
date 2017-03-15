@@ -1936,7 +1936,14 @@ CardboardVRDisplay.prototype.beginPresent_ = function() {
       e.preventDefault();
     }.bind(this), function(e) {
       // Back clicked.
-      this.exitPresent();
+
+      this.exitPresent().then(function () {
+        // In case of a custom calllback defined by the user, trigger it
+        if (typeof WebVRConfig.BACKACTION_CALLBACK === 'function') {
+          WebVRConfig.BACKACTION_CALLBACK();
+        }
+      });
+
       e.stopPropagation();
       e.preventDefault();
     }.bind(this));
@@ -2022,6 +2029,12 @@ CardboardVRDisplay.prototype.onResize_ = function(e) {
     // hide the URL bar unless content is bigger than the screen.
     // This will not be visible as long as the container element (e.g. body)
     // is set to 'overflow: hidden'.
+    var padding;
+    if (Util.isIOS()) {
+      padding = '0 10px 10px 0';
+    } else {
+      padding = '0';
+    }
     var cssProperties = [
       'position: absolute',
       'top: 0',
@@ -2030,7 +2043,7 @@ CardboardVRDisplay.prototype.onResize_ = function(e) {
       'height: ' + Math.min(screen.height, screen.width) + 'px',
       'border: 0',
       'margin: 0',
-      'padding: 0 10px 10px 0',
+      'padding:' + padding,
     ];
     gl.canvas.setAttribute('style', cssProperties.join('; ') + ';');
 
@@ -2313,6 +2326,13 @@ var DEFAULT_RIGHT_CENTER = {x: 0.5, y: 0.5};
  * params were found.
  */
 function DeviceInfo(deviceParams) {
+  if (WebVRConfig.ADDITIONAL_VIEWERS instanceof Array) {
+    var newViewer;
+    for (var i = 0; i < WebVRConfig.ADDITIONAL_VIEWERS.length; i++) {
+      newViewer = WebVRConfig.ADDITIONAL_VIEWERS[i];
+      Viewers[newViewer.id] = new CardboardViewer(newViewer);
+    }
+  }
   this.viewer = Viewers.CardboardV2;
   this.updateDeviceParams(deviceParams);
   this.distortion = new Distortion(this.viewer.distortionCoefficients);
