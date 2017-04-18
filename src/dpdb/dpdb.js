@@ -19,7 +19,7 @@ var DPDB_CACHE = require('./dpdb-cache.js');
 var Util = require('../util.js');
 
 // Online DPDB URL.
-var ONLINE_DPDB_URL = 'https://storage.googleapis.com/cardboard-dpdb/dpdb.json';
+var ONLINE_DPDB_URL = require('./dpdb.json');
 
 /**
  * Calculates device parameters based on the DPDB (Device Parameter Database).
