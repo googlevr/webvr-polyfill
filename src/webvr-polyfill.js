@@ -107,7 +107,7 @@ WebVRPolyfill.prototype.enablePolyfill = function() {
 
     window.VRDisplay.prototype.getFrameData = function(frameData) {
       /*
-      Copy frame data from native object into polyfilled object
+      Copy frame data from the native object into the polyfilled object.
       */
 
       nativeGetFrameData.call(this, nativeFrameData);
@@ -120,19 +120,21 @@ WebVRPolyfill.prototype.enablePolyfill = function() {
     };
   }
 
-  // Provide the VRDisplay object.
+  // Provide the `VRDisplay` object.
   window.VRDisplay = VRDisplay;
 
-  // Provide navigator.vrEnabled.
-  var self = this;
-  Object.defineProperty(navigator, 'vrEnabled', {
-    get: function () {
-      return self.isCardboardCompatible() &&
-          (self.isFullScreenAvailable() || Util.isIOS());
-    }
-  });
+  // Provide the `navigator.vrEnabled` property.
+  if (navigator && !navigator.vrEnabled) {
+    var self = this;
+    Object.defineProperty(navigator, 'vrEnabled', {
+      get: function () {
+        return self.isCardboardCompatible() &&
+            (self.isFullScreenAvailable() || Util.isIOS());
+      }
+    });
+  }
 
-  if (!'VRFrameData' in window) {
+  if (!('VRFrameData' in window)) {
     // Provide the VRFrameData object.
     window.VRFrameData = VRFrameData;
   }

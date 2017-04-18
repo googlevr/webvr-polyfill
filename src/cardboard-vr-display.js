@@ -237,6 +237,8 @@ CardboardVRDisplay.prototype.onResize_ = function(e) {
     // hide the URL bar unless content is bigger than the screen.
     // This will not be visible as long as the container element (e.g. body)
     // is set to 'overflow: hidden'.
+    // Additionally, 'box-sizing: content-box' ensures renderWidth = width + padding.
+    // This is required when 'box-sizing: border-box' is used elsewhere in the page.
     var cssProperties = [
       'position: absolute',
       'top: 0',
@@ -246,6 +248,7 @@ CardboardVRDisplay.prototype.onResize_ = function(e) {
       'border: 0',
       'margin: 0',
       'padding: 0 10px 10px 0',
+      'box-sizing: content-box',
     ];
     gl.canvas.setAttribute('style', cssProperties.join('; ') + ';');
 

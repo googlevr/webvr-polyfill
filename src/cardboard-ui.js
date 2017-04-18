@@ -150,13 +150,12 @@ CardboardUI.prototype.onResize = function() {
 
     var midline = gl.drawingBufferWidth / 2;
 
-    // Assumes your canvas width and height is scaled proportionately.
-    // TODO(smus): The following causes buttons to become huge on iOS, but seems
-    // like the right thing to do. For now, added a hack. But really, investigate why.
-    var dps = (gl.drawingBufferWidth / (screen.width * window.devicePixelRatio));
-    if (!Util.isIOS()) {
-      dps *= window.devicePixelRatio;
-    }
+    // The gl buffer size will likely be smaller than the physical pixel count.
+    // So we need to scale the dps down based on the actual buffer size vs physical pixel count.
+    // This will properly size the ui elements no matter what the gl buffer resolution is
+    var physicalPixels = Math.max(screen.width, screen.height) * window.devicePixelRatio;
+    var scalingRatio = gl.drawingBufferWidth / physicalPixels;
+    var dps = scalingRatio *  window.devicePixelRatio;
 
     var lineWidth = kCenterLineThicknessDp * dps / 2;
     var buttonSize = kButtonWidthDp * kTouchSlopFactor * dps;
