@@ -1,5 +1,7 @@
 # WebVR Polyfill
 
+This is a Travis CI GitHub integration test. Do Not Merge.
+
 A JavaScript implementation of the [WebVR spec][spec]. This project lets you use
 WebVR today, without requiring a [special][moz] [browser][cr] build. It also
 lets you view the same content without requiring a virtual reality viewer.
