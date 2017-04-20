@@ -39,6 +39,15 @@ Util.isIOS = (function() {
   };
 })();
 
+Util.isWebViewAndroid = (function() {
+  var isWebViewAndroid = navigator.userAgent.indexOf('Version') !== -1 &&
+      navigator.userAgent.indexOf('Android') !== -1 &&
+      navigator.userAgent.indexOf('Chrome') !== -1;
+  return function() {
+    return isWebViewAndroid;
+  };
+})();
+
 Util.isSafari = (function() {
   var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   return function() {
@@ -83,6 +92,9 @@ Util.getScreenHeight = function() {
 };
 
 Util.requestFullscreen = function(element) {
+  if (Util.isWebViewAndroid()) {
+      return false;
+  }
   if (element.requestFullscreen) {
     element.requestFullscreen();
   } else if (element.webkitRequestFullscreen) {
@@ -99,6 +111,7 @@ Util.requestFullscreen = function(element) {
 };
 
 Util.exitFullscreen = function() {
+
   if (document.exitFullscreen) {
     document.exitFullscreen();
   } else if (document.webkitExitFullscreen) {
