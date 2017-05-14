@@ -45,7 +45,9 @@ TouchPanner.prototype.resetSensor = function() {
 
 TouchPanner.prototype.onTouchStart_ = function(e) {
   // Only respond if there is exactly one touch.
-  if (e.touches.length != 1) {
+  // Note that the Daydream controller passes in a `touchstart` event with
+  // no `touches` property, so we must check for that case too.
+  if (!e.touches || e.touches.length != 1) {
     return;
   }
   this.rotateStart.set(e.touches[0].pageX, e.touches[0].pageY);
