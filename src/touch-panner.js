@@ -45,7 +45,7 @@ TouchPanner.prototype.resetSensor = function() {
 
 TouchPanner.prototype.onTouchStart_ = function(e) {
   // Only respond if there is exactly one touch.
-  if (e.touches.length != 1) {
+  if (!e.touches || e.touches.length != 1) {
     return;
   }
   this.rotateStart.set(e.touches[0].pageX, e.touches[0].pageY);
