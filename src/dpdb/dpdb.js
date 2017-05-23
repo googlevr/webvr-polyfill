@@ -15,7 +15,7 @@
 
 // Offline cache of the DPDB, to be used until we load the online one (and
 // as a fallback in case we can't load the online one).
-var DPDB_CACHE = require('./dpdb-cache.js');
+var DPDB_CACHE = require('./dpdb.json');
 var Util = require('../util.js');
 
 // Online DPDB URL.
