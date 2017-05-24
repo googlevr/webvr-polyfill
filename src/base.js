@@ -237,7 +237,7 @@ VRDisplay.prototype.requestPresent = function(layers) {
     if (self.layer_ && self.layer_.source) {
       var fullscreenElement = self.wrapForFullscreen(self.layer_.source);
 
-      function onFullscreenChange() {
+      var onFullscreenChange = function() {
         var actualFullscreenElement = Util.getFullscreenElement();
 
         self.isPresenting = (fullscreenElement === actualFullscreenElement);
@@ -261,7 +261,7 @@ VRDisplay.prototype.requestPresent = function(layers) {
         }
         self.fireVRDisplayPresentChange_();
       }
-      function onFullscreenError() {
+      var onFullscreenError = function() {
         if (!self.waitingForPresent_) {
           return;
         }
