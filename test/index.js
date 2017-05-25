@@ -7,17 +7,14 @@ const jsdom = require('jsdom');
 describe('node acceptance tests', function() {
   beforeEach(function() {
     global.window = jsdom.jsdom().defaultView;
-    global.navigator = window.navigator;
-    global.document = window.document;
   });
 
   afterEach(function() {
     delete global.window;
-    delete global.document;
   });
 
   it('can run in node', function() {
-    require(path.join(process.cwd(), 'src', 'main'));
+    require(path.join(process.cwd(), 'src', 'node-entry'));
 
     expect(window.VRDisplay).to.be.ok;
   });
