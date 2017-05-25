@@ -1,8 +1,7 @@
-// if running in node and there is a window mock available,
-// globalize its members where needed
-if (global && global.window) {
-  global.document = global.window.document;
-  global.navigator = global.window.navigator;
-}
+const jsdom = require('jsdom');
+
+global.window = jsdom.jsdom().defaultView;
+global.document = window.document;
+global.navigator = window.navigator;
 
 require('./main');
