@@ -37,7 +37,7 @@ function WebVRPolyfill() {
 
   if (!this.nativeLegacyWebVRAvailable) {
     this.enablePolyfill();
-    if (WebVRConfig.ENABLE_DEPRECATED_API) {
+    if (window.WebVRConfig.ENABLE_DEPRECATED_API) {
       this.enableDeprecatedPolyfill();
     }
   }
@@ -68,26 +68,26 @@ WebVRPolyfill.prototype.populateDevices = function() {
     this.displays.push(vrDisplay);
 
     // For backwards compatibility
-    if (WebVRConfig.ENABLE_DEPRECATED_API) {
+    if (window.WebVRConfig.ENABLE_DEPRECATED_API) {
       this.devices.push(new VRDisplayHMDDevice(vrDisplay));
       this.devices.push(new VRDisplayPositionSensorDevice(vrDisplay));
     }
   }
 
   // Add a Mouse and Keyboard driven VRDisplay for desktops/laptops
-  if (!this.isMobile() && !WebVRConfig.MOUSE_KEYBOARD_CONTROLS_DISABLED) {
+  if (!this.isMobile() && !window.WebVRConfig.MOUSE_KEYBOARD_CONTROLS_DISABLED) {
     vrDisplay = new MouseKeyboardVRDisplay();
     this.displays.push(vrDisplay);
 
     // For backwards compatibility
-    if (WebVRConfig.ENABLE_DEPRECATED_API) {
+    if (window.WebVRConfig.ENABLE_DEPRECATED_API) {
       this.devices.push(new VRDisplayHMDDevice(vrDisplay));
       this.devices.push(new VRDisplayPositionSensorDevice(vrDisplay));
     }
   }
 
   // Uncomment to add positional tracking via webcam.
-  //if (!this.isMobile() && WebVRConfig.ENABLE_DEPRECATED_API) {
+  //if (!this.isMobile() && window.WebVRConfig.ENABLE_DEPRECATED_API) {
   //  positionDevice = new WebcamPositionSensorVRDevice();
   //  this.devices.push(positionDevice);
   //}
@@ -155,7 +155,7 @@ WebVRPolyfill.prototype.getVRDisplays = function() {
 
   if (this.nativeWebVRAvailable) {
     return this.nativeGetVRDisplaysFunc.call(navigator).then(function(nativeDisplays) {
-      if (WebVRConfig.ALWAYS_APPEND_POLYFILL_DISPLAY) {
+      if (window.WebVRConfig.ALWAYS_APPEND_POLYFILL_DISPLAY) {
         return nativeDisplays.concat(polyfillDisplays);
       } else {
         return nativeDisplays.length > 0 ? nativeDisplays : polyfillDisplays;
@@ -224,7 +224,7 @@ WebVRPolyfill.prototype.isMobile = function() {
 WebVRPolyfill.prototype.isCardboardCompatible = function() {
   // For now, support all iOS and Android devices.
   // Also enable the WebVRConfig.FORCE_VR flag for debugging.
-  return this.isMobile() || WebVRConfig.FORCE_ENABLE_VR;
+  return this.isMobile() || window.WebVRConfig.FORCE_ENABLE_VR;
 };
 
 WebVRPolyfill.prototype.isFullScreenAvailable = function() {

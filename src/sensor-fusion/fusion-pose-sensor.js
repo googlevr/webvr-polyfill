@@ -30,8 +30,8 @@ function FusionPoseSensor() {
 
   this.start();
 
-  this.filter = new ComplementaryFilter(WebVRConfig.K_FILTER);
-  this.posePredictor = new PosePredictor(WebVRConfig.PREDICTION_TIME_S);
+  this.filter = new ComplementaryFilter(window.WebVRConfig.K_FILTER);
+  this.posePredictor = new PosePredictor(window.WebVRConfig.PREDICTION_TIME_S);
   this.touchPanner = new TouchPanner();
 
   this.filterToWorldQ = new MathUtil.Quaternion();
@@ -81,14 +81,14 @@ FusionPoseSensor.prototype.getOrientation = function() {
   var out = new MathUtil.Quaternion();
   out.copy(this.filterToWorldQ);
   out.multiply(this.resetQ);
-  if (!WebVRConfig.TOUCH_PANNER_DISABLED) {
+  if (!window.WebVRConfig.TOUCH_PANNER_DISABLED) {
     out.multiply(this.touchPanner.getOrientation());
   }
   out.multiply(this.predictedQ);
   out.multiply(this.worldToScreenQ);
 
   // Handle the yaw-only case.
-  if (WebVRConfig.YAW_ONLY) {
+  if (window.WebVRConfig.YAW_ONLY) {
     // Make a quaternion that only turns around the Y-axis.
     out.x = 0;
     out.z = 0;
@@ -118,7 +118,7 @@ FusionPoseSensor.prototype.resetPose = function() {
   // Take into account original pose.
   this.resetQ.multiply(this.originalPoseAdjustQ);
 
-  if (!WebVRConfig.TOUCH_PANNER_DISABLED) {
+  if (!window.WebVRConfig.TOUCH_PANNER_DISABLED) {
     this.touchPanner.resetSensor();
   }
 };

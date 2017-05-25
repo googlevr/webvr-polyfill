@@ -53,7 +53,7 @@ function CardboardDistorter(gl) {
   this.meshWidth = 20;
   this.meshHeight = 20;
 
-  this.bufferScale = WebVRConfig.BUFFER_SCALE;
+  this.bufferScale = window.WebVRConfig.BUFFER_SCALE;
 
   this.bufferWidth = gl.drawingBufferWidth;
   this.bufferHeight = gl.drawingBufferHeight;
@@ -117,7 +117,7 @@ function CardboardDistorter(gl) {
 
   this.onResize();
 
-  if (!WebVRConfig.CARDBOARD_UI_DISABLED) {
+  if (!window.WebVRConfig.CARDBOARD_UI_DISABLED) {
     this.cardboardUI = new CardboardUI(gl);
   }
 };
@@ -407,7 +407,7 @@ CardboardDistorter.prototype.submitFrame = function() {
 
   var glState = [];
 
-  if (!WebVRConfig.DIRTY_SUBMIT_FRAME_BINDINGS) {
+  if (!window.WebVRConfig.DIRTY_SUBMIT_FRAME_BINDINGS) {
     glState.push(
       gl.CURRENT_PROGRAM,
       gl.ARRAY_BUFFER_BINDING,
@@ -469,7 +469,7 @@ CardboardDistorter.prototype.submitFrame = function() {
       gl.clear(gl.COLOR_BUFFER_BIT);
     }
 
-    if (!WebVRConfig.DIRTY_SUBMIT_FRAME_BINDINGS) {
+    if (!window.WebVRConfig.DIRTY_SUBMIT_FRAME_BINDINGS) {
       self.realBindFramebuffer.call(gl, gl.FRAMEBUFFER, self.lastBoundFramebuffer);
     }
 
