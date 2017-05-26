@@ -13,13 +13,11 @@
     "object-assign": "^4.0.1"
   },
   "devDependencies": {
-    "browserify": "latest",
     "chai": "^3.5.0",
-    "derequire": "latest",
     "jsdom": "^9.12.0",
     "mocha": "^3.2.0",
-    "watchify": "latest",
-    "uglify-js": "^3.0.11"
+    "webpack": "^2.6.1",
+    "webpack-dev-server": "^2.4.5"
   },
   "main": "src/node-entry",
   "keywords": [
@@ -28,9 +26,9 @@
   ],
   "license": "Apache-2.0",
   "scripts": {
-    "watch": "watchify src/main.js --standalone WebVRPolyfill -v -d -o 'derequire > build/webvr-polyfill.js'",
-    "build": "browserify src/main.js --standalone WebVRPolyfill | derequire > build/webvr-polyfill.js",
-    "min": "browserify src/main.js --standalone WebVRPolyfill | derequire | uglifyjs -c > build/webvr-polyfill.min.js",
+    "start": "npm run watch",
+    "watch": "webpack-dev-server",
+    "build": "webpack",
     "test": "mocha"
   },
   "repository": "googlevr/webvr-polyfill",

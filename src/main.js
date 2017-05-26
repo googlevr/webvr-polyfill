@@ -78,3 +78,5 @@ if (!window.WebVRConfig.DEFER_INITIALIZATION) {
     new WebVRPolyfill();
   }
 }
+
+window.WebVRPolyfill = WebVRPolyfill;

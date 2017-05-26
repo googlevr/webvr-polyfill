@@ -113,6 +113,12 @@ cd webvr-polyfill
 npm install
 ```
 
+### Development Commands
+
+* `npm install`: installs the dependencies.
+* `npm start`: auto-builds the module whenever any source changes and serves the example
+content on `http://0.0.0.0:8080/`.
+* `npm run build`: builds the module.
 
 ## License
 
