@@ -8,10 +8,6 @@
     "Jordan Santell <jordan@jsantell.com>"
   ],
   "description": "Use WebVR today, on mobile or desktop, without requiring a special browser build.",
-  "dependencies": {
-    "eventemitter3": "^2.0.2",
-    "object-assign": "^4.0.1"
-  },
   "devDependencies": {
     "chai": "^3.5.0",
     "jsdom": "^9.12.0",

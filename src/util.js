@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-var objectAssign = require('object-assign');
-
 var Util = window.Util || {};
 
 Util.MIN_TIMESTEP = 0.001;
@@ -205,7 +203,15 @@ Util.isMobile = function() {
   return check;
 };
 
-Util.extend = objectAssign;
+Util.extend = function(dest, src) {
+  for (var key in src) {
+    if (src.hasOwnProperty(key)) {
+      dest[key] = src[key];
+    }
+  }
+
+  return dest;
+}
 
 Util.safariCssSizeWorkaround = function(canvas) {
   // TODO(smus): Remove this workaround when Safari for iOS is fixed.
