@@ -17,7 +17,7 @@ module.exports = {
     sourceMapFilename: '[name].js.map',
   },
   resolve: {
-    extensions: ['.js', '.js', '.json'],
+    extensions: ['.js', '.json'],
   },
   devtool: 'source-map',
   devServer: {
