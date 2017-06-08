@@ -272,6 +272,7 @@ function InstallWebVRSpecShim() {
   }
 };
 
+WebVRPolyfill.InstallWebVRSpecShim = InstallWebVRSpecShim;
 WebVRPolyfill.version = version;
 
 module.exports.WebVRPolyfill = WebVRPolyfill;

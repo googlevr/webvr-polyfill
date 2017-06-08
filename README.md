@@ -115,6 +115,11 @@ Performance is critical for VR. If you find your application is too sluggish,
 consider tweaking some of the above parameters. In particular, keeping
 `BUFFER_SCALE` at 0.5 (the default) will likely help a lot.
 
+## WebVR 1.1 Shim
+
+The polyfill exposes a helper method `WebVRPolyfill.InstallWebVRSpecShim` which
+installs a shim that updates a WebVR 1.0 spec implementation to WebVR 1.1.
+
 ## Development
 
 If you'd like to contribute to the `webvr-poyfill` library, check out
