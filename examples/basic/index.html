@@ -20,8 +20,8 @@ html, body {
 }
 
 canvas {
-  position: absolute;
-  top: 0;
+  width:      100%;
+  height:     100%;
 }
 
 #buttons {
@@ -35,7 +35,7 @@ canvas {
 </head>
 
 <body>
-
+  <canvas id="webgl"></canvas>
   <div id="buttons">
     <button id="fullscreen">Fullscreen</button>
     <button id="vr">VR (WebVR/Mobile only)</button>
@@ -68,27 +68,25 @@ document.addEventListener('touchmove', function(e) {
 
 
 <script>
+var canvas = document.getElementById('webgl');
+
 // Setup three.js WebGL renderer. Note: Antialiasing is a big performance hit.
 // Only enable it if you actually need to.
-var renderer = new THREE.WebGLRenderer({antialias: false});
+var renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas});
 renderer.setPixelRatio(Math.floor(window.devicePixelRatio));
-
-// Append the canvas element created by the renderer to document body element.
-document.body.appendChild(renderer.domElement);
 
 // Create a three.js scene.
 var scene = new THREE.Scene();
 
 // Create a three.js camera.
-var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+var camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 10000);
 
 // Apply VR headset positional data to camera.
 var controls = new THREE.VRControls(camera);
 
 // Apply VR stereo rendering to renderer.
 var effect = new THREE.VREffect(renderer);
-effect.setSize(window.innerWidth, window.innerHeight);
-
+effect.setSize(canvas.clientWidth, canvas.clientHeight, false);
 
 // Add a repeating grid as a skybox.
 var boxWidth = 5;
@@ -153,15 +151,23 @@ function animate(timestamp) {
 }
 
 function onResize() {
-  console.log('Resizing to %s x %s.', window.innerWidth, window.innerHeight);
-  effect.setSize(window.innerWidth, window.innerHeight);
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+  // The delay ensures the browser has a chance to layout
+  // the page and update the clientWidth/clientHeight.
+  if(!this.resizeDelay) {
+    this.resizeDelay = setTimeout(() => {
+      this.resizeDelay = null;
+      console.log('Resizing to %s x %s.', canvas.clientWidth, canvas.clientHeight);
+      effect.setSize(canvas.clientWidth, canvas.clientHeight, false);
+      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.updateProjectionMatrix();
+    }, 250);
+  }
 }
 
 function onVRDisplayPresentChange() {
   console.log('onVRDisplayPresentChange');
   onResize();
+  document.getElementById("buttons").style.display = vrDisplay.isPresenting ? "none" : "block";
 }
 
 // Resize the WebGL canvas when we resize and also when we change modes.
