@@ -2404,7 +2404,7 @@ WebVRPolyfill.prototype.enablePolyfill = function() {
   navigator.getVRDisplays = this.getVRDisplays.bind(this);
 
   // Polyfill native VRDisplay.getFrameData
-  if (this.nativeWebVRAvailable && window.VRFrameData) {
+  if (this.nativeWebVRAvailable && this.isCardboardCompatible() && window.VRFrameData) {
     var nativeFrameData = new window.VRFrameData();
     var nativeGetFrameData = window.VRDisplay.prototype.getFrameData;
     window.VRFrameData = VRFrameData;
@@ -2569,6 +2569,7 @@ function InstallWebVRSpecShim() {
   }
 };
 
+WebVRPolyfill.InstallWebVRSpecShim = InstallWebVRSpecShim;
 WebVRPolyfill.version = version;
 
 module.exports.WebVRPolyfill = WebVRPolyfill;
@@ -3802,7 +3803,7 @@ module.exports = Dpdb;
 
 module.exports = {
 	"format": 1,
-	"last_updated": "2017-01-12T08:41:55Z",
+	"last_updated": "2017-06-01T22:33:42Z",
 	"devices": [
 		{
 			"type": "android",
@@ -3842,7 +3843,7 @@ module.exports = {
 			"type": "android",
 			"rules": [
 				{
-					"mdmh": "Google//Pixel XL/"
+					"mdmh": "Google/*/Pixel XL/*"
 				},
 				{
 					"ua": "Pixel XL"
@@ -3859,7 +3860,7 @@ module.exports = {
 			"type": "android",
 			"rules": [
 				{
-					"mdmh": "Google//Pixel/"
+					"mdmh": "Google/*/Pixel/*"
 				},
 				{
 					"ua": "Pixel"
@@ -4601,6 +4602,23 @@ module.exports = {
 			"dpi": [
 				217.7,
 				231.4
+			],
+			"bw": 3,
+			"ac": 1000
+		},
+		{
+			"type": "android",
+			"rules": [
+				{
+					"mdmh": "samsung/*/SGH-M919/*"
+				},
+				{
+					"ua": "SGH-M919"
+				}
+			],
+			"dpi": [
+				440.8,
+				437.7
 			],
 			"bw": 3,
 			"ac": 1000
