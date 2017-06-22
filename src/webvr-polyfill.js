@@ -108,11 +108,17 @@ WebVRPolyfill.prototype.enablePolyfill = function() {
 
   // Polyfill native VRDisplay.getFrameData
   if (this.nativeWebVRAvailable && window.VRFrameData) {
+    var NativeVRFrameData = window.VRFrameData;
     var nativeFrameData = new window.VRFrameData();
     var nativeGetFrameData = window.VRDisplay.prototype.getFrameData;
     window.VRFrameData = VRFrameData;
 
     window.VRDisplay.prototype.getFrameData = function(frameData) {
+      if (frameData instanceof NativeVRFrameData) {
+        nativeGetFrameData.call(this, frameData);
+        return;
+      }
+
       /*
       Copy frame data from the native object into the polyfilled object.
       */
@@ -228,6 +234,8 @@ WebVRPolyfill.prototype.getVRDevices = function() {
     }
   });
 };
+
+WebVRPolyfill.prototype.NativeVRFrameData = window.VRFrameData;
 
 /**
  * Determine if a device is mobile.
