@@ -27,6 +27,7 @@ module.exports = {
       path.resolve(__dirname, 'examples'),
     ],
     host: '0.0.0.0',
+    disableHostCheck: true
   },
   plugins: [
     new webpack.optimize.UglifyJsPlugin({
