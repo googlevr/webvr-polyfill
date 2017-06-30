@@ -132,11 +132,6 @@ FusionPoseSensor.prototype.updateDeviceMotion_ = function(deviceMotion) {
   var rotRate = deviceMotion.rotationRate;
   var timestampS = deviceMotion.timeStamp / 1000;
 
-  // Firefox Android timeStamp returns one thousandth of a millisecond.
-  if (this.isFirefoxAndroid) {
-    timestampS /= 1000;
-  }
-
   var deltaS = timestampS - this.previousTimestampS;
   if (deltaS <= Util.MIN_TIMESTEP || deltaS > Util.MAX_TIMESTEP) {
     console.warn('Invalid timestamps detected. Time step between successive ' +
