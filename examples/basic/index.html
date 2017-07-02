@@ -20,8 +20,8 @@ html, body {
 }
 
 canvas {
-  width:      100%;
-  height:     100%;
+  width: 100%;
+  height: 100%;
 }
 
 #buttons {
@@ -153,9 +153,10 @@ function animate(timestamp) {
 function onResize() {
   // The delay ensures the browser has a chance to layout
   // the page and update the clientWidth/clientHeight.
-  if(!this.resizeDelay) {
-    this.resizeDelay = setTimeout(() => {
-      this.resizeDelay = null;
+  // This problem particularly crops up under iOS.
+  if (!onResize.resizeDelay) {
+    onResize.resizeDelay = setTimeout(function () {
+      onResize.resizeDelay = null;
       console.log('Resizing to %s x %s.', canvas.clientWidth, canvas.clientHeight);
       effect.setSize(canvas.clientWidth, canvas.clientHeight, false);
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -167,7 +168,7 @@ function onResize() {
 function onVRDisplayPresentChange() {
   console.log('onVRDisplayPresentChange');
   onResize();
-  document.getElementById("buttons").style.display = vrDisplay.isPresenting ? "none" : "block";
+  document.getElementById("buttons").hidden = vrDisplay.isPresenting;
 }
 
 // Resize the WebGL canvas when we resize and also when we change modes.
