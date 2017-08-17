@@ -137,7 +137,7 @@ WebVRPolyfill.prototype.enablePolyfill = function() {
   window.VRDisplay = VRDisplay;
 
   // Provide the `navigator.vrEnabled` property.
-  if (navigator && !navigator.vrEnabled) {
+  if (navigator && !navigator.hasOwnProperty('vrEnabled')) {
     var self = this;
     Object.defineProperty(navigator, 'vrEnabled', {
       get: function () {
