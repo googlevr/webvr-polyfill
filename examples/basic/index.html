@@ -69,6 +69,7 @@ document.addEventListener('touchmove', function(e) {
 
 <script>
 var canvas = document.getElementById('webgl');
+var buttons = document.getElementById('buttons');
 
 // Setup three.js WebGL renderer. Note: Antialiasing is a big performance hit.
 // Only enable it if you actually need to.
@@ -168,7 +169,7 @@ function onResize() {
 function onVRDisplayPresentChange() {
   console.log('onVRDisplayPresentChange');
   onResize();
-  document.getElementById("buttons").hidden = vrDisplay.isPresenting;
+  buttons.hidden = vrDisplay.isPresenting;
 }
 
 // Resize the WebGL canvas when we resize and also when we change modes.
