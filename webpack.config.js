@@ -17,7 +17,7 @@ module.exports = {
     sourceMapFilename: '[name].js.map',
   },
   resolve: {
-    extensions: ['.js', '.js', '.json'],
+    extensions: ['.js', '.json'],
   },
   devtool: 'source-map',
   devServer: {
@@ -27,6 +27,7 @@ module.exports = {
       path.resolve(__dirname, 'examples'),
     ],
     host: '0.0.0.0',
+    disableHostCheck: true
   },
   plugins: [
     new webpack.optimize.UglifyJsPlugin({

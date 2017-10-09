@@ -2333,7 +2333,7 @@ function WebVRPolyfill() {
                                  navigator.getVRDisplays :
                                  null;
 
-  if (!this.nativeLegacyWebVRAvailable) {
+  if (!this.nativeLegacyWebVRAvailable && !this.nativeWebVRAvailable) {
     this.enablePolyfill();
     if (window.WebVRConfig.ENABLE_DEPRECATED_API) {
       this.enableDeprecatedPolyfill();
@@ -2405,11 +2405,17 @@ WebVRPolyfill.prototype.enablePolyfill = function() {
 
   // Polyfill native VRDisplay.getFrameData
   if (this.nativeWebVRAvailable && window.VRFrameData) {
+    var NativeVRFrameData = window.VRFrameData;
     var nativeFrameData = new window.VRFrameData();
     var nativeGetFrameData = window.VRDisplay.prototype.getFrameData;
     window.VRFrameData = VRFrameData;
 
     window.VRDisplay.prototype.getFrameData = function(frameData) {
+      if (frameData instanceof NativeVRFrameData) {
+        nativeGetFrameData.call(this, frameData);
+        return;
+      }
+
       /*
       Copy frame data from the native object into the polyfilled object.
       */
@@ -2428,7 +2434,7 @@ WebVRPolyfill.prototype.enablePolyfill = function() {
   window.VRDisplay = VRDisplay;
 
   // Provide the `navigator.vrEnabled` property.
-  if (navigator && !navigator.vrEnabled) {
+  if (navigator && typeof navigator.vrEnabled === 'undefined') {
     var self = this;
     Object.defineProperty(navigator, 'vrEnabled', {
       get: function () {
@@ -2526,6 +2532,8 @@ WebVRPolyfill.prototype.getVRDevices = function() {
   });
 };
 
+WebVRPolyfill.prototype.NativeVRFrameData = window.VRFrameData;
+
 /**
  * Determine if a device is mobile.
  */
@@ -2569,6 +2577,7 @@ function InstallWebVRSpecShim() {
   }
 };
 
+WebVRPolyfill.InstallWebVRSpecShim = InstallWebVRSpecShim;
 WebVRPolyfill.version = version;
 
 module.exports.WebVRPolyfill = WebVRPolyfill;
@@ -2580,7 +2589,7 @@ module.exports.WebVRPolyfill = WebVRPolyfill;
 
 module.exports = {
 	"name": "webvr-polyfill",
-	"version": "0.9.34",
+	"version": "0.9.39",
 	"homepage": "https://github.com/googlevr/webvr-polyfill",
 	"authors": [
 		"Boris Smus <boris@smus.com>",
@@ -3517,11 +3526,14 @@ CardboardVRDisplay.prototype.onResize_ = function(e) {
       'position: absolute',
       'top: 0',
       'left: 0',
-      'width: ' + Math.max(screen.width, screen.height) + 'px',
-      'height: ' + Math.min(screen.height, screen.width) + 'px',
+      // Use vw/vh to handle implicitly devicePixelRatio; issue #282
+      'width: 100vw',
+      'height: 100vh',
       'border: 0',
       'margin: 0',
-      'padding: 0 10px 10px 0',
+      // Set no padding in the case where you don't have control over
+      // the content injection, like in Unity WebGL; issue #282
+      'padding: 0px',
       'box-sizing: content-box',
     ];
     gl.canvas.setAttribute('style', cssProperties.join('; ') + ';');
@@ -3802,7 +3814,7 @@ module.exports = Dpdb;
 
 module.exports = {
 	"format": 1,
-	"last_updated": "2017-01-12T08:41:55Z",
+	"last_updated": "2017-08-27T14:39:31Z",
 	"devices": [
 		{
 			"type": "android",
@@ -3842,7 +3854,7 @@ module.exports = {
 			"type": "android",
 			"rules": [
 				{
-					"mdmh": "Google//Pixel XL/"
+					"mdmh": "Google/*/Pixel XL/*"
 				},
 				{
 					"ua": "Pixel XL"
@@ -3859,7 +3871,7 @@ module.exports = {
 			"type": "android",
 			"rules": [
 				{
-					"mdmh": "Google//Pixel/"
+					"mdmh": "Google/*/Pixel/*"
 				},
 				{
 					"ua": "Pixel"
@@ -3984,6 +3996,23 @@ module.exports = {
 			],
 			"bw": 3,
 			"ac": 1000
+		},
+		{
+			"type": "android",
+			"rules": [
+				{
+					"mdmh": "LENOVO/*/Lenovo PB2-690Y/*"
+				},
+				{
+					"ua": "Lenovo PB2-690Y"
+				}
+			],
+			"dpi": [
+				457.2,
+				454.713
+			],
+			"bw": 3,
+			"ac": 500
 		},
 		{
 			"type": "android",
@@ -4609,6 +4638,23 @@ module.exports = {
 			"type": "android",
 			"rules": [
 				{
+					"mdmh": "samsung/*/SGH-M919/*"
+				},
+				{
+					"ua": "SGH-M919"
+				}
+			],
+			"dpi": [
+				440.8,
+				437.7
+			],
+			"bw": 3,
+			"ac": 1000
+		},
+		{
+			"type": "android",
+			"rules": [
+				{
 					"mdmh": "samsung/*/SM-N9005/*"
 				},
 				{
@@ -5085,6 +5131,40 @@ module.exports = {
 				}
 			],
 			"dpi": 533,
+			"bw": 3,
+			"ac": 500
+		},
+		{
+			"type": "android",
+			"rules": [
+				{
+					"mdmh": "samsung/*/SM-G950F/*"
+				},
+				{
+					"ua": "SM-G950F"
+				}
+			],
+			"dpi": [
+				562.707,
+				565.293
+			],
+			"bw": 3,
+			"ac": 500
+		},
+		{
+			"type": "android",
+			"rules": [
+				{
+					"mdmh": "samsung/*/SM-G955U/*"
+				},
+				{
+					"ua": "SM-G955U"
+				}
+			],
+			"dpi": [
+				522.514,
+				525.762
+			],
 			"bw": 3,
 			"ac": 500
 		},
@@ -6045,11 +6125,6 @@ FusionPoseSensor.prototype.updateDeviceMotion_ = function(deviceMotion) {
   var accGravity = deviceMotion.accelerationIncludingGravity;
   var rotRate = deviceMotion.rotationRate;
   var timestampS = deviceMotion.timeStamp / 1000;
-
-  // Firefox Android timeStamp returns one thousandth of a millisecond.
-  if (this.isFirefoxAndroid) {
-    timestampS /= 1000;
-  }
 
   var deltaS = timestampS - this.previousTimestampS;
   if (deltaS <= Util.MIN_TIMESTEP || deltaS > Util.MAX_TIMESTEP) {
