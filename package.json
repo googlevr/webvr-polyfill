@@ -14,7 +14,7 @@
     "mocha": "^3.2.0",
     "semver": "^5.3.0",
     "webpack": "^2.6.1",
-    "webpack-dev-server": "^2.4.5"
+    "webpack-dev-server": "2.7.1"
   },
   "main": "src/node-entry",
   "keywords": [
