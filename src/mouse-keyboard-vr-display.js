@@ -34,11 +34,16 @@ function MouseKeyboardVRDisplay() {
 
   this.capabilities.hasOrientation = true;
 
+  this.onKeyDown_ = this.onKeyDown_.bind(this);
+  this.onMouseDown_ = this.onMouseDown_.bind(this);
+  this.onMouseMove_ = this.onMouseMove_.bind(this);
+  this.onMouseUp_ = this.onMouseUp_.bind(this);
+
   // Attach to mouse and keyboard events.
-  window.addEventListener('keydown', this.onKeyDown_.bind(this));
-  window.addEventListener('mousemove', this.onMouseMove_.bind(this));
-  window.addEventListener('mousedown', this.onMouseDown_.bind(this));
-  window.addEventListener('mouseup', this.onMouseUp_.bind(this));
+  window.addEventListener('keydown', this.onKeyDown_);
+  window.addEventListener('mousemove', this.onMouseMove_);
+  window.addEventListener('mousedown', this.onMouseDown_);
+  window.addEventListener('mouseup', this.onMouseUp_);
 
   // "Private" members.
   this.phi_ = 0;
@@ -60,6 +65,18 @@ function MouseKeyboardVRDisplay() {
   this.orientationOut_ = new Float32Array(4);
 }
 MouseKeyboardVRDisplay.prototype = new VRDisplay();
+
+MouseKeyboardVRDisplay.prototype.setContainer = function(container) {
+  window.removeEventListener('keydown', this.onKeyDown_);
+  window.removeEventListener('mousemove', this.onMouseMove_);
+  window.removeEventListener('mousedown', this.onMouseDown_);
+  window.removeEventListener('mouseup', this.onMouseUp_);
+
+  container.addEventListener('keydown', this.onKeyDown_);
+  container.addEventListener('mousemove', this.onMouseMove_);
+  container.addEventListener('mousedown', this.onMouseDown_);
+  container.addEventListener('mouseup', this.onMouseUp_);
+}
 
 MouseKeyboardVRDisplay.prototype.getImmediatePose = function() {
   this.orientation_.setFromEulerYXZ(this.phi_, this.theta_, 0);
