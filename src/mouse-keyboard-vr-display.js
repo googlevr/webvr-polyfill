@@ -66,18 +66,6 @@ function MouseKeyboardVRDisplay() {
 }
 MouseKeyboardVRDisplay.prototype = new VRDisplay();
 
-MouseKeyboardVRDisplay.prototype.setContainer = function(container) {
-  window.removeEventListener('keydown', this.onKeyDown_);
-  window.removeEventListener('mousemove', this.onMouseMove_);
-  window.removeEventListener('mousedown', this.onMouseDown_);
-  window.removeEventListener('mouseup', this.onMouseUp_);
-
-  container.addEventListener('keydown', this.onKeyDown_);
-  container.addEventListener('mousemove', this.onMouseMove_);
-  container.addEventListener('mousedown', this.onMouseDown_);
-  container.addEventListener('mouseup', this.onMouseUp_);
-}
-
 MouseKeyboardVRDisplay.prototype.getImmediatePose = function() {
   this.orientation_.setFromEulerYXZ(this.phi_, this.theta_, 0);
 
