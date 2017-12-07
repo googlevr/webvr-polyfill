@@ -478,4 +478,15 @@ Util.getDomainFromUrl = function(url) {
   return domain;
 }
 
+Util.getQuaternionAngle = function(quat) {
+  // angle = 2 * acos(qw)
+  // If w is greater than 1 (THREE.js, how can this be?), arccos is not defined.
+  if (quat.w > 1) {
+    console.warn('getQuaternionAngle: w > 1');
+    return 0;
+  }
+  var angle = 2 * Math.acos(quat.w);
+  return angle;
+};
+
 module.exports = Util;
