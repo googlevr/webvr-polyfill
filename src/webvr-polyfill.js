@@ -64,7 +64,6 @@ WebVRPolyfill.prototype.getPolyfillDisplays = function() {
       DIRTY_SUBMIT_FRAME_BINDINGS:  this.config.DIRTY_SUBMIT_FRAME_BINDINGS,
     });
 
-    vrDisplay.fireVRDisplayConnect_();
     this.polyfillDisplays.push(vrDisplay);
   }
 
