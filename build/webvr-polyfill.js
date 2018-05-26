@@ -2312,9 +2312,9 @@ var SENSOR_FREQUENCY = 60;
 var X_AXIS = new Vector3(1, 0, 0);
 var Z_AXIS = new Vector3(0, 0, 1);
 var orientation = {};
-if (screen.orientation) {
+if ((typeof screen !== 'undefined') && screen.orientation) {
   orientation = screen.orientation;
-} else if (screen.msOrientation) {
+} else if ((typeof screen !== 'undefined') && screen.msOrientation) {
   orientation = screen.msOrientation;
 } else {
   Object.defineProperty(orientation, 'angle', {
