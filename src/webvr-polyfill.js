@@ -64,7 +64,6 @@ WebVRPolyfill.prototype.getPolyfillDisplays = function() {
       CARDBOARD_UI_DISABLED:        this.config.CARDBOARD_UI_DISABLED,
       K_FILTER:                     this.config.K_FILTER,
       PREDICTION_TIME_S:            this.config.PREDICTION_TIME_S,
-      TOUCH_PANNER_DISABLED:        this.config.TOUCH_PANNER_DISABLED,
       ROTATE_INSTRUCTIONS_DISABLED: this.config.ROTATE_INSTRUCTIONS_DISABLED,
       YAW_ONLY:                     this.config.YAW_ONLY,
       BUFFER_SCALE:                 this.config.BUFFER_SCALE,
