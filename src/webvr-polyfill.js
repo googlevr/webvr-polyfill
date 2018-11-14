@@ -129,22 +129,7 @@ WebVRPolyfill.prototype.getVRDisplays = function() {
     return Promise.resolve(this.getPolyfillDisplays());
   }
 
-  // Set up a race condition if this browser has a bug where
-  // `navigator.getVRDisplays()` never resolves.
-  var timeoutId;
-  var vrDisplaysNative = this.native.getVRDisplays.call(navigator);
-  var timeoutPromise = new Promise(function(resolve) {
-    timeoutId = setTimeout(function() {
-      console.warn('Native WebVR implementation detected, but `getVRDisplays()` failed to resolve. Falling back to polyfill.');
-      resolve([]);
-    }, config.GET_VR_DISPLAYS_TIMEOUT);
-  });
-
-  return race([
-    vrDisplaysNative,
-    timeoutPromise
-  ]).then(nativeDisplays => {
-    clearTimeout(timeoutId);
+  return this.native.getVRDisplays.call(navigator).then((nativeDisplays) => {
     return nativeDisplays.length > 0 ? nativeDisplays : this.getPolyfillDisplays();
   });
 };
